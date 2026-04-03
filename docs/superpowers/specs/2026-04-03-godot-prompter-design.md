@@ -107,6 +107,28 @@ godot-prompter/
 | `csharp-godot` | C# | C# conventions |
 | `csharp-signals` | C# | C# signal patterns |
 
+## MVP Definition (Phase 1 Complete)
+
+Phase 1 is complete when:
+- All 8 Phase 1 skills have SKILL.md files with working content
+- Each skill has been tested with at least one pressure scenario (baseline fail → skill-loaded pass)
+- Bootstrap skill correctly detects and maps tools for all 6 platforms
+- README includes installation instructions verified on Claude Code and at least one other platform
+- Design spec status updated to "Complete"
+
+## Language Coverage Rules
+
+- **Dual-language skills** (most skills): Include both GDScript and C# examples. GDScript example comes first.
+- **Language-specific skills** (`csharp-godot`, `csharp-signals`): C# only, by definition.
+- **Architecture skills** where the pattern is identical in both languages: Show GDScript, add a brief C# note only if the API differs.
+- When a Godot API differs between GDScript and C# (e.g., signal connection syntax), always show both.
+
+## Godot Version Target
+
+- **Minimum: Godot 4.3** — this is the oldest 4.x version with a stable, mature API
+- Skills should note when a feature requires a newer version (e.g., 4.4+)
+- Do not use deprecated APIs even if they still work in 4.3
+
 ## Testing Strategy
 
 - Skills tested using TDD approach (pressure scenarios with subagents)
