@@ -44,6 +44,28 @@ See platform-specific setup files:
 - **Build & Deploy** — Export pipelines, optimization, addon development
 - **C# Specific** — C# conventions, signal patterns
 
+## Getting Started
+
+Once installed, invoke skills by name when working on a Godot project:
+
+### Examples
+
+**"Set up a new Godot project"** — triggers `godot-project-setup`
+
+**"Write tests for my health component"** — triggers `godot-testing`
+
+**"Review this GDScript for issues"** — triggers `godot-code-review`
+
+**"I need a platformer player controller"** — triggers `player-controller`
+
+**"Add a state machine to my enemy"** — triggers `state-machine`
+
+**"How should I organize my scene tree?"** — triggers `scene-organization`
+
+**"Implement save/load for my game"** — triggers `save-load`
+
+Skills provide the agent with Godot-specific patterns, code examples, and checklists so it follows best practices instead of generic advice.
+
 ## Contributing
 
 See `CLAUDE.md` for contributor guidelines. Each skill is a self-contained folder under `skills/` with a `SKILL.md` file and optional supporting documents.
