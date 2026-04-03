@@ -38,7 +38,7 @@ Key benefits:
 
 | Component | Purpose | Key Signals |
 |---|---|---|
-| `HealthComponent` | Tracks current and max HP, applies damage and healing | `health_changed(old, new)`, `died` |
+| `HealthComponent` | Tracks current and max HP, applies damage and healing | `health_changed(current, maximum)`, `died` |
 | `HitboxComponent` | Detects overlapping hurtboxes and triggers damage | `hit(target_hurtbox)` |
 | `HurtboxComponent` | Receives hits, routes damage to `HealthComponent` | `hurt(damage_amount)` |
 | `InteractableComponent` | Marks an entity as interactable and fires on player overlap | `interacted(interactor)` |

@@ -120,7 +120,7 @@ func _physics_process(delta: float) -> void:
 - In C#, use `System.Diagnostics.Debugger.Break()` or attach a .NET debugger (e.g. JetBrains Rider or VS Code with the Godot extension).
 
 ```csharp
-private void _PhysicsProcess(double delta)
+public override void _PhysicsProcess(double delta)
 {
     if (Velocity.Length() > MaxSpeed)
     {

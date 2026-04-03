@@ -16,7 +16,7 @@ Cover NavigationAgent2D/3D, steering behaviors, behavior trees, and patrol patte
 ```
 World (Node2D or Node3D)
 └── NavigationRegion2D (or NavigationRegion3D)
-    ├── TileMap / StaticBody2D (geometry)
+    ├── TileMapLayer / StaticBody2D (geometry)
     └── Enemy (CharacterBody2D with NavigationAgent2D child)
 ```
 

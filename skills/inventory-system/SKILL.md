@@ -474,9 +474,11 @@ public partial class Equipment : Node
     /// <summary>Equips item into slot. Returns the previously equipped item (may be null).</summary>
     public ItemData Equip(ItemData item, SlotType slot)
     {
-        GD.PushWarning(item.Type != ItemData.ItemType.Equipment
-            ? $"Equip: '{item.Name}' is not an Equipment item"
-            : "");
+        if (item.Type != ItemData.ItemType.Equipment)
+        {
+            GD.PushWarning($"Equip: '{item.Name}' is not an Equipment item");
+            return null;
+        }
 
         var previous          = _equipmentSlots[slot];
         _equipmentSlots[slot] = item;
@@ -647,7 +649,11 @@ public partial class InventoryUI : Control
     public override void _Ready()
     {
         _grid = GetNode<GridContainer>("GridContainer");
-        GD.PushError(Inventory == null ? "InventoryUI: inventory must be assigned" : "");
+        if (Inventory == null)
+        {
+            GD.PushError("InventoryUI: inventory must be assigned");
+            return;
+        }
 
         Inventory.InventoryChanged += Refresh;
         BuildGrid();

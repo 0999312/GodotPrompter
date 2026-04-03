@@ -247,7 +247,6 @@ public partial class ScreenShakeCamera : Camera2D
         }
         else
         {
-            var rng = new RandomNumberGenerator();
             Offset = new Vector2(
                 MaxOffset.X * shake * (float)GD.RandRange(-1.0, 1.0),
                 MaxOffset.Y * shake * (float)GD.RandRange(-1.0, 1.0)

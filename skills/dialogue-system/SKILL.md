@@ -306,8 +306,11 @@ public partial class DialogueManager : Node
 
     public void StartDialogue(DialogueData dialogueData)
     {
-        GD.PushError(dialogueData == null
-            ? "DialogueManager.StartDialogue: data must not be null" : "");
+        if (dialogueData == null)
+        {
+            GD.PushError("DialogueManager.StartDialogue: data must not be null");
+            return;
+        }
 
         _data   = dialogueData;
         _active = true;
