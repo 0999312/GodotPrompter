@@ -173,7 +173,7 @@ func receive_hit(damage: int) -> void:
 		return
 	hurt.emit(damage)
 	if health_component:
-		health_component.apply_damage(damage)
+		health_component.take_damage(damage)
 	if invincibility_duration > 0.0:
 		_invincible = true
 		_iframes_timer.start(invincibility_duration)
@@ -221,7 +221,7 @@ public partial class HurtboxComponent : Area2D
         if (_invincible) return;
 
         EmitSignal(SignalName.Hurt, damage);
-        HealthComponent?.ApplyDamage(damage);
+        HealthComponent?.TakeDamage(damage);
 
         if (InvincibilityDuration > 0f)
         {
@@ -253,7 +253,7 @@ Components must not call methods on siblings directly. Use signals to keep them 
 │                              │  receive_hit(dmg)   │ │
 │                              │  ──── calls ──────► │ │
 │                              │  HealthComponent    │ │
-│                              │  .apply_damage(dmg) │ │
+│                              │  .take_damage(dmg) │ │
 │                              └────────┬────────────┘ │
 │                                       │              │
 │                              health_changed / died   │
@@ -269,8 +269,8 @@ Components must not call methods on siblings directly. Use signals to keep them 
 
 1. `HitboxComponent` detects an overlapping `HurtboxComponent` via `area_entered`.
 2. It emits `hit(target_hurtbox)` (for the entity's own logic, e.g. playing a sound) and calls `target_hurtbox.receive_hit(damage)` — the only cross-component call, and it targets the direct interface of the hurtbox, not a sibling.
-3. `HurtboxComponent.receive_hit()` emits `hurt(damage_amount)` for animation/VFX, then calls `health_component.apply_damage(damage)` on its explicitly wired reference.
-4. `HealthComponent.apply_damage()` updates HP and emits `health_changed` or `died`. Listeners (UI, GameManager, etc.) connect to those signals without touching the combat components.
+3. `HurtboxComponent.receive_hit()` emits `hurt(damage_amount)` for animation/VFX, then calls `health_component.take_damage(damage)` on its explicitly wired reference.
+4. `HealthComponent.take_damage()` updates HP and emits `health_changed` or `died`. Listeners (UI, GameManager, etc.) connect to those signals without touching the combat components.
 
 ---
 
@@ -330,7 +330,7 @@ static func get_component(entity: Node, component_type: GDScript) -> Node:
 ## Example usage:
 ##   var health := ComponentUtils.get_component(enemy, HealthComponent) as HealthComponent
 ##   if health:
-##       health.apply_damage(5)
+##       health.take_damage(5)
 ```
 
 ### C# (`ComponentUtils.cs`)
@@ -357,7 +357,7 @@ public static class ComponentUtils
 
 // Example usage:
 //   var health = ComponentUtils.GetComponent<HealthComponent>(enemy);
-//   health?.ApplyDamage(5);
+//   health?.TakeDamage(5);
 ```
 
 ---

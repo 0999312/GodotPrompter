@@ -315,7 +315,6 @@ func _migrate(data: Dictionary) -> Dictionary:
 ```csharp
 // SaveManager.cs — add as autoload named SaveManager
 using System.Collections.Generic;
-using System.Text.Json;
 using Godot;
 
 public partial class SaveManager : Node
@@ -520,7 +519,7 @@ For complex games, use the "saveable" group pattern. SaveManager collects serial
 SaveManager.save_game()
     │
     ├─► get_nodes_in_group("saveable")
-    │       └─► node.serialize()  →  { id, data }
+    │       └─► node.serialize.call()  →  { id, data }
     │
     └─► write combined dict to disk
 
@@ -529,7 +528,7 @@ SaveManager.load_game()
     ├─► read dict from disk
     │
     └─► get_nodes_in_group("saveable")
-            └─► node.deserialize(data[node.id])
+            └─► node.deserialize.call(data[node.id])
 ```
 
 ### SaveableComponent Pattern
@@ -546,19 +545,18 @@ extends Node
 ## Unique stable ID for this saveable object (set in the Inspector).
 @export var save_id: String = ""
 
+## Assign a Callable that returns a Dictionary of state to save.
+var serialize: Callable = func() -> Dictionary:
+	push_error("SaveableComponent: serialize not set on '%s'" % get_parent().name)
+	return {}
+
+## Assign a Callable that accepts a Dictionary to restore state from.
+var deserialize: Callable = func(_data: Dictionary) -> void:
+	push_error("SaveableComponent: deserialize not set on '%s'" % get_parent().name)
+
 
 func _ready() -> void:
 	add_to_group("saveable")
-
-
-## Override in the parent scene script, or connect via signal.
-func serialize() -> Dictionary:
-	push_error("SaveableComponent: serialize() not implemented on '%s'" % get_parent().name)
-	return {}
-
-
-func deserialize(data: Dictionary) -> void:
-	push_error("SaveableComponent: deserialize() not implemented on '%s'" % get_parent().name)
 ```
 
 **Example — Chest node using SaveableComponent:**
