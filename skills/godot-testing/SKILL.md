@@ -79,7 +79,7 @@ using GdUnit4;
 using static GdUnit4.Assertions;
 
 [TestSuite]
-public class HealthComponentTest : GdUnit4.GdUnitTestSuite
+public partial class HealthComponentTest : GdUnit4.GdUnitTestSuite
 {
     private HealthComponent _health = default!;
 

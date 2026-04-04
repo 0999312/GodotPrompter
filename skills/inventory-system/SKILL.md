@@ -285,7 +285,7 @@ public partial class Inventory : Node
 
 ## 4. InventorySlot
 
-`InventorySlot` is a lightweight object tracking an item reference and its quantity. Define it as an inner class on `Inventory` (GDScript) or as a standalone `[GlobalClass]` Resource (C#, so it works with typed `Array`).
+`InventorySlot` is a lightweight object tracking an item reference and its quantity. Define it as an inner class on `Inventory` (GDScript) or as a standalone `RefCounted` subclass (C#).
 
 ### GDScript
 
@@ -332,7 +332,6 @@ func remove_from_stack(amount: int) -> void:
 // InventorySlot.cs
 using Godot;
 
-[GlobalClass]
 public partial class InventorySlot : RefCounted
 {
     public ItemData Item     { get; set; }

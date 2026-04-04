@@ -22,17 +22,29 @@ GodotPrompter is a plugin that provides **skills** — structured domain knowled
 ### Claude Code
 
 ```bash
-claude plugins add godot-prompter
+claude mcp add godot-prompter -- npx -y @anthropic-ai/claude-code-mcp
+```
+
+Or clone and add locally:
+
+```bash
+git clone https://github.com/jame581/GodotPrompter.git
+claude plugins add ./GodotPrompter
 ```
 
 ### Other Platforms
 
-See platform-specific setup files:
-- Copilot CLI: Uses `AGENTS.md` automatically
-- Gemini CLI: Uses `GEMINI.md` automatically
-- Codex: See `.codex/INSTALL.md`
-- OpenCode: See `.opencode/INSTALL.md`
-- Cursor: Add skills to `.cursorrules`
+Clone the repo and point your tool at it:
+
+```bash
+git clone https://github.com/jame581/GodotPrompter.git
+```
+
+- **Copilot CLI:** Place repo in your project root — reads `AGENTS.md` automatically
+- **Gemini CLI:** Place repo in your project root — reads `GEMINI.md` automatically
+- **Codex:** See `.codex/INSTALL.md`
+- **OpenCode:** See `.opencode/INSTALL.md`
+- **Cursor:** Add skill content to `.cursorrules` or project rules
 
 ## Skill Categories
 

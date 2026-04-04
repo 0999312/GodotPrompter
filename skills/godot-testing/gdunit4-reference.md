@@ -61,7 +61,7 @@ using GdUnit4;
 using static GdUnit4.Assertions;
 
 [TestSuite]
-public class HealthComponentTest : GdUnit4.GdUnitTestSuite
+public partial class HealthComponentTest : GdUnit4.GdUnitTestSuite
 {
     [TestCase]
     public void Example()
@@ -108,7 +108,7 @@ func after_test() -> void:
 
 ```csharp
 [TestSuite]
-public class ExampleTest : GdUnit4.GdUnitTestSuite
+public partial class ExampleTest : GdUnit4.GdUnitTestSuite
 {
     [Before]
     public void Before()
