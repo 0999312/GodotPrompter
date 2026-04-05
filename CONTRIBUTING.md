@@ -88,6 +88,42 @@ model: inherit
 Agent system prompt goes here.
 ```
 
+## Releasing a New Version
+
+When publishing a new version (e.g., v1.1.0):
+
+1. **Make changes** in the GodotPrompter repo, commit, push
+2. **Update version** in these files:
+   - `.claude-plugin/plugin.json` → `"version": "1.1.0"`
+   - `package.json` → `"version": "1.1.0"`
+   - `CHANGELOG.md` → add `## [1.1.0]` section
+3. **Commit and tag:**
+   ```bash
+   git add .claude-plugin/plugin.json package.json CHANGELOG.md
+   git commit -m "chore: bump version to 1.1.0"
+   git tag -a v1.1.0 -m "v1.1.0 — description of changes"
+   git push origin master --tags
+   ```
+4. **Create GitHub release:**
+   ```bash
+   gh release create v1.1.0 --title "v1.1.0 — GodotPrompter" --notes "Release notes here"
+   ```
+5. **Update the marketplace repo** (`godot-prompter-marketplace`):
+   - Update `.claude-plugin/marketplace.json` → `"version": "1.1.0"`
+   - Commit and push
+   ```bash
+   cd ../godot-prompter-marketplace
+   # edit .claude-plugin/marketplace.json version
+   git add -A && git commit -m "bump to v1.1.0" && git push
+   ```
+
+Users update with:
+```bash
+claude plugins update godot-prompter          # Claude Code
+copilot plugin update godot-prompter          # Copilot CLI
+gemini extensions update godot-prompter       # Gemini CLI
+```
+
 ## Conventions
 
 - Skills must be self-contained and independently useful
