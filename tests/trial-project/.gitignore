@@ -1,0 +1,12 @@
+# Godot 4.x
+.godot/
+*.uid
+
+# Mono / C#
+.mono/
+data_*/
+*.translation
+
+# OS
+.DS_Store
+Thumbs.db
