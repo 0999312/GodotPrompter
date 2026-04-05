@@ -17,6 +17,7 @@ func _ready() -> void:
 	super._ready()
 	hitbox.damage = contact_damage
 	hitbox.is_active = true
+	hitbox.monitoring = true
 	detection_zone.body_entered.connect(_on_detection_body_entered)
 	detection_zone.body_exited.connect(_on_detection_body_exited)
 
