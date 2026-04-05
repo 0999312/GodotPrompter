@@ -17,3 +17,5 @@ export_presets.cfg
 
 # Build
 node_modules/
+
+tests/plugin-test
