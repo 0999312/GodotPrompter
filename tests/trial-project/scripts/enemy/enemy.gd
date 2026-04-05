@@ -25,6 +25,7 @@ func _ready() -> void:
 		health_component.max_health = stats.health
 		health_component._current_health = stats.health
 		hitbox.damage = stats.damage
+	hurtbox.health_component = health_component
 	health_component.died.connect(_on_died)
 	hurtbox.hurt.connect(_on_hurt)
 	_idle_timer = randf_range(1.0, 3.0)

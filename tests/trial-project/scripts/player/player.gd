@@ -19,6 +19,7 @@ var _attack_timer: float = 0.0
 func _ready() -> void:
 	add_to_group("player")
 	hitbox.monitoring = false
+	hurtbox.health_component = health_component
 	health_component.health_changed.connect(_on_health_changed)
 	health_component.died.connect(_on_died)
 	hurtbox.hurt.connect(_on_hurt)
