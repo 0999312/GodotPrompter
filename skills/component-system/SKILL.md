@@ -289,6 +289,11 @@ Three patterns in order of preference:
 # Inspector: drag the HealthComponent node into the slot.
 ```
 
+> **Gotcha:** `@export` node references are wired via the editor inspector. If you build scenes programmatically or hand-write `.tscn` files, the reference may be null at runtime. In that case, wire it explicitly in the parent's `_ready()`:
+> ```gdscript
+> hurtbox.health_component = health_component
+> ```
+
 ### @onready direct child — simple when the component is a known child
 
 ```gdscript
