@@ -1,0 +1,62 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy/enemy.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/components/hitbox_component.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/components/hurtbox_component.gd" id="4"]
+[ext_resource type="Resource" path="res://resources/enemies/slime_stats.tres" id="5"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy"]
+size = Vector2(20, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_hurtbox"]
+size = Vector2(22, 22)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_enemy_hitbox"]
+size = Vector2(18, 18)
+
+[node name="Enemy" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 3
+script = ExtResource("1")
+stats = ExtResource("5")
+
+[node name="Sprite" type="ColorRect" parent="."]
+offset_left = -12.0
+offset_top = -12.0
+offset_right = 12.0
+offset_bottom = 12.0
+color = Color(0.804, 0.361, 0.361, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_enemy")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_desired_distance = 4.0
+target_desired_distance = 4.0
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2")
+max_health = 50
+
+[node name="HurtboxComponent" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 8
+script = ExtResource("4")
+health_component = NodePath("../HealthComponent")
+
+[node name="HurtboxShape" type="CollisionShape2D" parent="HurtboxComponent"]
+shape = SubResource("RectangleShape2D_enemy_hurtbox")
+
+[node name="AttackPivot" type="Node2D" parent="."]
+
+[node name="HitboxComponent" type="Area2D" parent="AttackPivot"]
+position = Vector2(25, 0)
+collision_layer = 8
+collision_mask = 16
+monitoring = false
+script = ExtResource("3")
+damage = 5
+
+[node name="HitboxShape" type="CollisionShape2D" parent="AttackPivot/HitboxComponent"]
+shape = SubResource("RectangleShape2D_enemy_hitbox")
