@@ -11,6 +11,36 @@ A structured design process for Godot 4.3+ features and systems — from blank s
 
 ---
 
+## Process: How to Brainstorm
+
+Do NOT jump straight to designing. Follow these steps:
+
+### Step 1: Understand the request
+Ask **one clarifying question at a time** to understand what the user wants to build. Focus on:
+- What kind of game/system is this? (genre, perspective, scope)
+- What are the core mechanics? (movement, combat, progression)
+- What already exists? (existing code, scenes, assets)
+- What are the constraints? (platform, performance, team size)
+
+### Step 2: Propose 2-3 approaches
+Once you understand the request, propose architectural options with trade-offs. For example:
+- "Enum FSM vs Node FSM for your state machine — here's when each fits"
+- "EventBus vs direct signals for your systems — here's the trade-off"
+Lead with your recommendation and explain why.
+
+### Step 3: Design with approval
+Present the design section by section (scene tree, signal map, data flow). Ask "does this look right?" after each section before continuing.
+
+### Step 4: Create implementation plan
+After the design is approved, break it into ordered implementation tasks. Each task should:
+- Reference the specific GodotPrompter skills to follow
+- List exact files to create
+- Be small enough to implement in one session
+
+Save the plan to `docs/godot-prompter/plans/` in the user's project.
+
+---
+
 ## 1. When to Use
 
 Start here whenever you are:

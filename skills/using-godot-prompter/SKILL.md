@@ -17,6 +17,37 @@ GodotPrompter provides Godot 4.x domain-specific skills for AI coding agents. Sk
 
 **In Cursor:** Skills are loaded via custom instructions / rules system.
 
+## Workflow: From Idea to Working Game
+
+GodotPrompter handles the full development workflow. No other plugins required.
+
+### 1. Design Phase
+Load `godot-prompter:godot-brainstorming` — it guides you through:
+- Asking clarifying questions about the game/system
+- Proposing architectural approaches with trade-offs
+- Designing scene trees, signal maps, and data flow
+- Creating an implementation plan with ordered tasks
+
+### 2. Implementation Phase
+For each task in the plan, load the relevant domain skill:
+- Building a player? Load `godot-prompter:player-controller` and `godot-prompter:state-machine`
+- Adding inventory? Load `godot-prompter:inventory-system`
+- Need save/load? Load `godot-prompter:save-load`
+
+Each skill provides complete code examples, Godot best practices, and a checklist.
+
+### 3. Review Phase
+Load `godot-prompter:godot-code-review` to review the code against Godot-specific checklists.
+
+### Agents
+GodotPrompter provides 3 specialized agents (use via the Agent tool):
+- **godot-game-architect** — Designs systems, plans scene trees, chooses patterns
+- **godot-game-dev** — Implements features guided by skills
+- **godot-code-reviewer** — Reviews code against Godot best practices
+
+### Plan Storage
+Implementation plans and design docs are saved to `docs/godot-prompter/plans/` and `docs/godot-prompter/specs/` in the user's project.
+
 ## Platform Adaptation
 
 Skills use Claude Code tool names as the canonical reference. Non-Claude platforms: see the appropriate tool mapping file in `references/` for your platform's equivalents.
