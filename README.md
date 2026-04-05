@@ -18,7 +18,7 @@ GodotPrompter is a plugin that provides **skills** — structured domain knowled
 
 ```bash
 # Add the marketplace
-claude plugins marketplace add https://github.com/jame581/GodotPrompter.git
+claude plugins marketplace add jame581/godot-prompter-marketplace
 
 # Install the plugin
 claude plugins install godot-prompter
@@ -29,7 +29,7 @@ Or install from a local clone:
 ```bash
 git clone https://github.com/jame581/GodotPrompter.git
 claude plugins marketplace add ./GodotPrompter
-claude plugins install godot-prompter
+claude plugins install godot-prompter@godot-prompter-marketplace
 ```
 
 Then start a new session and ask:
@@ -43,14 +43,14 @@ The agent loads the `godot-project-setup` skill and provides a complete director
 ### Gemini CLI
 
 ```bash
-gemini extensions install https://github.com/jame581/GodotPrompter.git
+gemini extensions install jame581/godot-prompter-marketplace
 ```
 
 ### GitHub Copilot CLI
 
 ```bash
-copilot plugin marketplace add jame581/GodotPrompter
-copilot plugin install godot-prompter
+copilot plugin marketplace add jame581/godot-prompter-marketplace
+copilot plugin install godot-prompter@godot-prompter-marketplace
 ```
 
 ### Cursor
@@ -115,9 +115,9 @@ GodotPrompter includes 3 specialized agents:
 
 | Platform | Status | Install |
 |----------|--------|---------|
-| Claude Code | Primary | `claude plugins marketplace add <repo>` then `claude plugins install godot-prompter` |
-| Gemini CLI | Supported | `gemini extensions install <repo>` |
-| GitHub Copilot CLI | Supported | `copilot plugin marketplace add jame581/GodotPrompter` |
+| Claude Code | Primary | `claude plugins marketplace add jame581/godot-prompter-marketplace` |
+| Gemini CLI | Supported | `gemini extensions install jame581/godot-prompter-marketplace` |
+| GitHub Copilot CLI | Supported | `copilot plugin marketplace add jame581/godot-prompter-marketplace` |
 | Cursor | Supported | `/add-plugin godot-prompter` or clone with `.cursor-plugin/` |
 | Codex | Supported | Clone + symlink (see `.codex/INSTALL.md`) |
 | OpenCode | Supported | Add to `opencode.json` (see `.opencode/INSTALL.md`) |
