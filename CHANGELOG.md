@@ -4,6 +4,20 @@ All notable changes to GodotPrompter will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.0] - 2026-04-06
+
+### Added
+
+- **animation-system** skill — AnimationPlayer, AnimationTree, blend trees, state machines, sprite animation, and code-driven animation
+- **shader-basics** skill — Godot shader language, visual shaders, common visual recipes, and post-processing effects
+- **audio-system** skill — audio buses, AudioStreamPlayer, spatial audio, music management, SFX pooling, and dynamic mixing
+- Release process documentation in CONTRIBUTING.md
+- GitHub Sponsors and Buy Me a Coffee funding configuration
+
+### Removed
+
+- Trial project test files (replaced by real Godot project validation)
+
 ## [1.0.0] - 2026-04-06
 
 ### Added
