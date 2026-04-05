@@ -29,7 +29,7 @@ Or install from a local clone:
 ```bash
 git clone https://github.com/jame581/GodotPrompter.git
 claude plugins marketplace add ./GodotPrompter
-claude plugins install godot-prompter@godot-prompter-marketplace
+claude plugins install godot-prompter@godot-prompter
 ```
 
 Then start a new session and ask:
@@ -50,7 +50,7 @@ gemini extensions install jame581/godot-prompter-marketplace
 
 ```bash
 copilot plugin marketplace add jame581/godot-prompter-marketplace
-copilot plugin install godot-prompter@godot-prompter-marketplace
+copilot plugin install godot-prompter@godot-prompter
 ```
 
 ### Cursor
