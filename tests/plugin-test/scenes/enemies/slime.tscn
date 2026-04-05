@@ -1,0 +1,71 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/slime/slime.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/state_machine/state_machine.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/enemies/slime/slime_patrol.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/enemies/slime/slime_chase.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/enemies/slime/slime_hurt.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/enemies/slime/slime_death.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/components/hitbox.gd" id="9"]
+
+[node name="Slime" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 1
+script = ExtResource("1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+
+[node name="StateMachine" type="Node" parent="."]
+script = ExtResource("2")
+initial_state = NodePath("Patrol")
+
+[node name="Patrol" type="Node" parent="StateMachine"]
+script = ExtResource("3")
+
+[node name="Chase" type="Node" parent="StateMachine"]
+script = ExtResource("4")
+
+[node name="Hurt" type="Node" parent="StateMachine"]
+script = ExtResource("5")
+
+[node name="Death" type="Node" parent="StateMachine"]
+script = ExtResource("6")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("7")
+max_health = 30.0
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 16
+script = ExtResource("8")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 0
+monitoring = false
+script = ExtResource("9")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+
+[node name="DetectionZone" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionZone"]
+
+[node name="PatrolPath" type="Node2D" parent="."]
+
+[node name="Left" type="Marker2D" parent="PatrolPath"]
+position = Vector2(-100, 0)
+
+[node name="Right" type="Marker2D" parent="PatrolPath"]
+position = Vector2(100, 0)
