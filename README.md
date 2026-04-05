@@ -1,36 +1,44 @@
 # GodotPrompter
 
-Agentic skills framework for Godot 4.x game development. Gives AI coding agents domain-specific expertise for GDScript and C# Godot projects.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Godot 4.x](https://img.shields.io/badge/Godot-4.3+-blue.svg)](https://godotengine.org)
+[![Skills: 29](https://img.shields.io/badge/Skills-29-green.svg)](#available-skills)
+
+Agentic skills framework for Godot 4.x game development. Gives AI coding agents domain-specific expertise for GDScript and C# projects.
 
 ## What is this?
 
 GodotPrompter is a plugin that provides **skills** — structured domain knowledge that AI agents load on demand. When you ask your agent to "add a state machine" or "set up multiplayer", it loads the relevant GodotPrompter skill and follows Godot-specific best practices instead of relying on generic knowledge.
 
-## Supported Platforms
+**29 skills** covering project setup, architecture, gameplay systems, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
 
-| Platform | Status |
-|----------|--------|
-| Claude Code | Primary |
-| GitHub Copilot CLI | Supported |
-| Gemini CLI | Supported |
-| Codex | Supported |
-| Cursor | Supported |
-| OpenCode | Community |
+## Quick Start
 
-## Installation
-
-### Claude Code
+### Claude Code (recommended)
 
 ```bash
-claude mcp add godot-prompter -- npx -y @anthropic-ai/claude-code-mcp
+# Add the marketplace
+claude plugins marketplace add https://github.com/jame581/GodotPrompter.git
+
+# Install the plugin
+claude plugins install godot-prompter
 ```
 
-Or clone and add locally:
+Or install from a local clone:
 
 ```bash
 git clone https://github.com/jame581/GodotPrompter.git
-claude plugins add ./GodotPrompter
+claude plugins marketplace add ./GodotPrompter
+claude plugins install godot-prompter
 ```
+
+Then start a new session and ask:
+
+```
+"I'm starting a new Godot 4.3 project. How should I organize it?"
+```
+
+The agent loads the `godot-project-setup` skill and provides a complete directory structure, autoload setup, and .gitignore — not generic advice.
 
 ### Other Platforms
 
@@ -46,42 +54,125 @@ git clone https://github.com/jame581/GodotPrompter.git
 - **OpenCode:** See `.opencode/INSTALL.md`
 - **Cursor:** Add skill content to `.cursorrules` or project rules
 
-## Skill Categories
+## How It Works
 
-- **Core / Process** — Project setup, brainstorming, code review, debugging, testing
-- **Architecture & Patterns** — Scene organization, state machines, signals, composition
-- **Gameplay Systems** — Player controllers, inventory, dialogue, save/load, AI, cameras
-- **UI/UX** — Control nodes, themes, responsive layouts, HUD
-- **Multiplayer** — RPCs, synchronization, dedicated servers
-- **Build & Deploy** — Export pipelines, optimization, addon development
-- **C# Specific** — C# conventions, signal patterns
+### 1. Design Phase
+Ask the agent to brainstorm a feature. It loads `godot-brainstorming` and walks you through:
+- Clarifying questions about your game/system
+- Architectural approaches with trade-offs
+- Scene tree design, signal maps, and data flow
+- An implementation plan with ordered tasks
 
-## Getting Started
+### 2. Implementation Phase
+For each task, the agent loads the relevant domain skill:
+- Building a player? → `player-controller` + `state-machine`
+- Adding inventory? → `inventory-system` + `resource-pattern`
+- Need save/load? → `save-load`
 
-Once installed, invoke skills by name when working on a Godot project:
+### 3. Review Phase
+Ask for a code review. The agent loads `godot-code-review` and checks against Godot-specific checklists.
 
-### Examples
+### Agents
 
-**"Set up a new Godot project"** — triggers `godot-project-setup`
+GodotPrompter includes 3 specialized agents:
 
-**"Write tests for my health component"** — triggers `godot-testing`
+| Agent | Purpose |
+|-------|---------|
+| **godot-game-architect** | Designs systems, plans scene trees, chooses patterns |
+| **godot-game-dev** | Implements features guided by skills |
+| **godot-code-reviewer** | Reviews code against Godot best practices |
 
-**"Review this GDScript for issues"** — triggers `godot-code-review`
+## Supported Platforms
 
-**"I need a platformer player controller"** — triggers `player-controller`
+| Platform | Status | Install |
+|----------|--------|---------|
+| Claude Code | Primary | `claude plugins marketplace add <repo>` then `claude plugins install godot-prompter` |
+| GitHub Copilot CLI | Supported | Clone repo, reads `AGENTS.md` |
+| Gemini CLI | Supported | Clone repo, reads `GEMINI.md` |
+| Codex | Supported | See `.codex/INSTALL.md` |
+| Cursor | Supported | Add to `.cursorrules` |
+| OpenCode | Community | See `.opencode/INSTALL.md` |
 
-**"Add a state machine to my enemy"** — triggers `state-machine`
+## Available Skills
 
-**"How should I organize my scene tree?"** — triggers `scene-organization`
+### Core / Process (6 skills)
 
-**"Implement save/load for my game"** — triggers `save-load`
+| Skill | Description |
+|-------|-------------|
+| `using-godot-prompter` | Bootstrap — skill catalog, workflow guide, platform setup |
+| `godot-project-setup` | Scaffold directory structure, autoloads, .gitignore, input maps |
+| `godot-brainstorming` | Scene tree planning, node selection, architectural decisions |
+| `godot-code-review` | Review checklist — best practices, anti-patterns, Godot pitfalls |
+| `godot-debugging` | Remote debugger, print techniques, signal tracing, error patterns |
+| `godot-testing` | TDD with GUT and gdUnit4 — test structure, mocking, CI |
 
-Skills provide the agent with Godot-specific patterns, code examples, and checklists so it follows best practices instead of generic advice.
+### Architecture & Patterns (6 skills)
+
+| Skill | Description |
+|-------|-------------|
+| `scene-organization` | Scene tree composition, when to split scenes, node hierarchy |
+| `state-machine` | Enum-based, node-based, resource-based FSM with trade-offs |
+| `event-bus` | Global EventBus autoload with typed signals, decoupled communication |
+| `component-system` | Hitbox/Hurtbox/Health components, composition over inheritance |
+| `resource-pattern` | Custom Resources for items, stats, config, editor integration |
+| `dependency-injection` | Autoloads, service locators, @export injection, scene injection |
+
+### Gameplay Systems (6 skills)
+
+| Skill | Description |
+|-------|-------------|
+| `player-controller` | CharacterBody2D/3D movement — top-down, platformer, first-person |
+| `inventory-system` | Resource-based items, slot management, stacking, UI binding |
+| `dialogue-system` | Branching dialogue trees, conditions, UI presentation |
+| `save-load` | ConfigFile, JSON, Resource serialization, version migration |
+| `ai-navigation` | NavigationAgent2D/3D, steering behaviors, patrol patterns |
+| `camera-system` | Smooth follow, screen shake, camera zones, transitions |
+
+### UI/UX (3 skills)
+
+| Skill | Description |
+|-------|-------------|
+| `godot-ui` | Control nodes, themes, anchors, containers, layout patterns |
+| `responsive-ui` | Multi-resolution scaling, aspect ratios, DPI, mobile adaptation |
+| `hud-system` | Health bars, score displays, minimap, damage numbers, notifications |
+
+### Multiplayer (3 skills)
+
+| Skill | Description |
+|-------|-------------|
+| `multiplayer-basics` | MultiplayerAPI, ENet/WebSocket, RPCs, authority model |
+| `multiplayer-sync` | MultiplayerSynchronizer, interpolation, prediction, lag compensation |
+| `dedicated-server` | Headless export, server architecture, lobby management |
+
+### Build & Deploy (3 skills)
+
+| Skill | Description |
+|-------|-------------|
+| `export-pipeline` | Platform exports, CI/CD with GitHub Actions, itch.io/Steam deploy |
+| `godot-optimization` | Profiler, draw calls, physics tuning, object pooling, bottlenecks |
+| `addon-development` | EditorPlugin, @tool scripts, custom inspectors, dock panels |
+
+### C# Specific (2 skills)
+
+| Skill | Description |
+|-------|-------------|
+| `csharp-godot` | C# conventions, GodotSharp API, project setup, GDScript interop |
+| `csharp-signals` | [Signal] delegates, EmitSignal, async awaiting, event architecture |
+
+## Validation
+
+Skills were validated against a real Godot 4.3+ trial project (top-down 2D action RPG):
+
+- **13/15 skills PASS** — guidance worked as documented
+- **2/15 skills PARTIAL** — minor gotchas documented and fixed
+- **0/15 skills FAIL**
+
+See `tests/trial-project/VALIDATION.md` for detailed results.
 
 ## Contributing
 
-See `CLAUDE.md` for contributor guidelines. Each skill is a self-contained folder under `skills/` with a `SKILL.md` file and optional supporting documents.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to add new skills, conventions, and testing requirements.
 
 ## License
 
-MIT
+[MIT](LICENSE)
