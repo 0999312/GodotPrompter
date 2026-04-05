@@ -72,11 +72,13 @@ Skills use Claude Code tool names as the canonical reference. Non-Claude platfor
 
 ### Gameplay Systems
 - `player-controller` — CharacterBody2D/3D movement, input handling
+- `animation-system` — AnimationPlayer, AnimationTree, blend trees, state machines
 - `inventory-system` — Resource-based inventory patterns
 - `dialogue-system` — Dialogue trees and patterns
 - `save-load` — Serialization strategies
 - `ai-navigation` — NavigationAgent, behavior trees
 - `camera-system` — Camera follow, shake, zones
+- `audio-system` — Audio buses, music management, SFX pooling, spatial audio
 
 ### UI/UX
 - `godot-ui` — Control nodes, themes, containers
@@ -87,6 +89,9 @@ Skills use Claude Code tool names as the canonical reference. Non-Claude platfor
 - `multiplayer-basics` — MultiplayerAPI, RPCs, authority
 - `multiplayer-sync` — Synchronization, interpolation
 - `dedicated-server` — Headless export, server architecture
+
+### Rendering & Visual
+- `shader-basics` — Godot shader language, visual shaders, common recipes, post-processing
 
 ### Build & Deploy
 - `export-pipeline` — Platform exports, CI/CD

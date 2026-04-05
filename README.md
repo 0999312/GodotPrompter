@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Godot 4.x](https://img.shields.io/badge/Godot-4.3+-blue.svg)](https://godotengine.org)
-[![Skills: 29](https://img.shields.io/badge/Skills-29-green.svg)](#available-skills)
+[![Skills: 32](https://img.shields.io/badge/Skills-32-green.svg)](#available-skills)
 
 Agentic skills framework for Godot 4.x game development. Gives AI coding agents domain-specific expertise for GDScript and C# projects.
 
@@ -10,7 +10,7 @@ Agentic skills framework for Godot 4.x game development. Gives AI coding agents 
 
 GodotPrompter is a plugin that provides **skills** — structured domain knowledge that AI agents load on demand. When you ask your agent to "add a state machine" or "set up multiplayer", it loads the relevant GodotPrompter skill and follows Godot-specific best practices instead of relying on generic knowledge.
 
-**29 skills** covering project setup, architecture, gameplay systems, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
+**32 skills** covering project setup, architecture, gameplay systems, animation, shaders, audio, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
 
 ## Quick Start
 
@@ -146,11 +146,13 @@ GodotPrompter includes 3 specialized agents:
 | `resource-pattern` | Custom Resources for items, stats, config, editor integration |
 | `dependency-injection` | Autoloads, service locators, @export injection, scene injection |
 
-### Gameplay Systems (6 skills)
+### Gameplay Systems (8 skills)
 
 | Skill | Description |
 |-------|-------------|
 | `player-controller` | CharacterBody2D/3D movement — top-down, platformer, first-person |
+| `animation-system` | AnimationPlayer, AnimationTree, blend trees, state machines, sprite animation |
+| `audio-system` | Audio buses, music management, SFX pooling, spatial audio, dynamic mixing |
 | `inventory-system` | Resource-based items, slot management, stacking, UI binding |
 | `dialogue-system` | Branching dialogue trees, conditions, UI presentation |
 | `save-load` | ConfigFile, JSON, Resource serialization, version migration |
@@ -172,6 +174,12 @@ GodotPrompter includes 3 specialized agents:
 | `multiplayer-basics` | MultiplayerAPI, ENet/WebSocket, RPCs, authority model |
 | `multiplayer-sync` | MultiplayerSynchronizer, interpolation, prediction, lag compensation |
 | `dedicated-server` | Headless export, server architecture, lobby management |
+
+### Rendering & Visual (1 skill)
+
+| Skill | Description |
+|-------|-------------|
+| `shader-basics` | Godot shader language, visual shaders, common recipes, post-processing |
 
 ### Build & Deploy (3 skills)
 

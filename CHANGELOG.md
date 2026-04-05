@@ -8,10 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- 29 skills covering Godot 4.3+ development (GDScript + C#)
+- 32 skills covering Godot 4.3+ development (GDScript + C#)
 - **Core/Process:** godot-project-setup, godot-brainstorming, godot-code-review, godot-debugging, godot-testing, using-godot-prompter
 - **Architecture:** scene-organization, state-machine, event-bus, component-system, resource-pattern, dependency-injection
-- **Gameplay:** player-controller, inventory-system, dialogue-system, save-load, ai-navigation, camera-system
+- **Gameplay:** player-controller, animation-system, audio-system, inventory-system, dialogue-system, save-load, ai-navigation, camera-system
+- **Rendering/Visual:** shader-basics
 - **UI/UX:** godot-ui, responsive-ui, hud-system
 - **Multiplayer:** multiplayer-basics, multiplayer-sync, dedicated-server
 - **Build/Deploy:** export-pipeline, godot-optimization, addon-development
