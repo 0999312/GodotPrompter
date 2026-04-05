@@ -347,6 +347,7 @@ func spawn(world_position: Vector2, amount: int, is_critical: bool = false) -> v
     # Convert world position to screen space so the label sits above the entity
     var screen_pos: Vector2 = get_viewport().get_canvas_transform() * world_position
 
+    # Wraps around — if POOL_SIZE is too small, older labels get recycled mid-animation.
     var dn := _pool[_pool_index % POOL_SIZE]
     _pool_index += 1
 

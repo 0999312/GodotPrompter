@@ -352,7 +352,7 @@ public partial class MyPlugin : EditorPlugin
 
 ### EditorResourcePicker
 
-`EditorResourcePicker` is the drop-down widget used in the Inspector for `Resource`-typed properties. You can embed it in your dock or inspector plugin to let users assign resources interactively.
+`EditorResourcePicker` is the drop-down widget used in the Inspector for `Resource`-typed properties. This is an **editor-only** widget for building custom tooling — it cannot be used in runtime UI. You can embed it in your dock or inspector plugin to let users assign resources interactively.
 
 ```gdscript
 # Inside a dock or editor tool scene

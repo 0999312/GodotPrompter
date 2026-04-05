@@ -29,7 +29,7 @@ These can also be set at runtime:
 
 ```gdscript
 # Read current viewport size
-var viewport_size: Vector2i = get_viewport().get_visible_rect().size
+var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 
 # Change stretch mode at runtime
 ProjectSettings.set_setting("display/window/stretch/mode", "canvas_items")
