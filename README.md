@@ -40,19 +40,48 @@ Then start a new session and ask:
 
 The agent loads the `godot-project-setup` skill and provides a complete directory structure, autoload setup, and .gitignore — not generic advice.
 
-### Other Platforms
-
-Clone the repo and point your tool at it:
+### Gemini CLI
 
 ```bash
-git clone https://github.com/jame581/GodotPrompter.git
+gemini extensions install https://github.com/jame581/GodotPrompter.git
 ```
 
-- **Copilot CLI:** Place repo in your project root — reads `AGENTS.md` automatically
-- **Gemini CLI:** Place repo in your project root — reads `GEMINI.md` automatically
-- **Codex:** See `.codex/INSTALL.md`
-- **OpenCode:** See `.opencode/INSTALL.md`
-- **Cursor:** Add skill content to `.cursorrules` or project rules
+### GitHub Copilot CLI
+
+```bash
+copilot plugin marketplace add jame581/GodotPrompter
+copilot plugin install godot-prompter
+```
+
+### Cursor
+
+```
+/add-plugin godot-prompter
+```
+
+Or clone and place in your project — Cursor reads `.cursor-plugin/plugin.json`.
+
+### Codex
+
+```bash
+git clone https://github.com/jame581/GodotPrompter.git ~/.codex/godot-prompter
+mkdir -p ~/.agents/skills
+ln -s ~/.codex/godot-prompter/skills ~/.agents/skills/godot-prompter
+```
+
+See `.codex/INSTALL.md` for Windows instructions.
+
+### OpenCode
+
+Add to `opencode.json`:
+
+```json
+{
+  "plugin": ["godot-prompter@git+https://github.com/jame581/GodotPrompter.git"]
+}
+```
+
+See `.opencode/INSTALL.md` for details.
 
 ## How It Works
 
@@ -87,11 +116,11 @@ GodotPrompter includes 3 specialized agents:
 | Platform | Status | Install |
 |----------|--------|---------|
 | Claude Code | Primary | `claude plugins marketplace add <repo>` then `claude plugins install godot-prompter` |
-| GitHub Copilot CLI | Supported | Clone repo, reads `AGENTS.md` |
-| Gemini CLI | Supported | Clone repo, reads `GEMINI.md` |
-| Codex | Supported | See `.codex/INSTALL.md` |
-| Cursor | Supported | Add to `.cursorrules` |
-| OpenCode | Community | See `.opencode/INSTALL.md` |
+| Gemini CLI | Supported | `gemini extensions install <repo>` |
+| GitHub Copilot CLI | Supported | `copilot plugin marketplace add jame581/GodotPrompter` |
+| Cursor | Supported | `/add-plugin godot-prompter` or clone with `.cursor-plugin/` |
+| Codex | Supported | Clone + symlink (see `.codex/INSTALL.md`) |
+| OpenCode | Supported | Add to `opencode.json` (see `.opencode/INSTALL.md`) |
 
 ## Available Skills
 
