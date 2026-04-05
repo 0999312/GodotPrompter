@@ -92,7 +92,7 @@ item = ExtResource("11")
 [node name="GameCamera" type="Camera2D" parent="."]
 script = ExtResource("7")
 
-[node name="HUD" instance=ExtResource("6")]
+[node name="HUD" parent="." instance=ExtResource("6")]
 
 [node name="InventoryUI" parent="HUD" instance=ExtResource("9")]
 
