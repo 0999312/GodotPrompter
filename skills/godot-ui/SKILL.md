@@ -7,6 +7,8 @@ description: Use when building user interfaces — Control nodes, themes, anchor
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, then C#.
 
+> **Related skills:** **responsive-ui** for multi-resolution scaling, **hud-system** for in-game HUD patterns, **dialogue-system** for dialogue UI presentation.
+
 ---
 
 ## 1. Control Node Hierarchy

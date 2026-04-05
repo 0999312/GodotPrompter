@@ -7,6 +7,8 @@ description: Use when implementing signals in C# — [Signal] delegates, EmitSig
 
 This skill is **C# only**. For general C# conventions and project setup, see the **csharp-godot** skill. Godot signals in C# require a different mental model from GDScript: delegates declared with `[Signal]`, strongly-typed `+=`/`-=` connections, and mandatory disconnection in `_ExitTree()`. All examples target Godot 4.x with no deprecated APIs.
 
+> **Related skills:** **csharp-godot** for C# conventions and project setup, **event-bus** for global signal hub architecture, **component-system** for signal-based component communication.
+
 ---
 
 ## 1. Signal Declaration

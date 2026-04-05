@@ -61,6 +61,25 @@ func _is_peer_in_range(peer_id: int) -> bool:
     return global_position.distance_to(peer_player.global_position) <= 500.0
 ```
 
+### Visibility Filters (C#)
+
+```csharp
+// Only send updates to peers within 500 units of this object.
+public override void _Ready()
+{
+    var sync = GetNode<MultiplayerSynchronizer>("MultiplayerSynchronizer");
+    sync.AddVisibilityFilter(Callable.From<int>(IsPeerInRange));
+}
+
+private bool IsPeerInRange(int peerId)
+{
+    var peerPlayer = GetPlayerNode(peerId);
+    if (peerPlayer is null)
+        return false;
+    return GlobalPosition.DistanceTo(peerPlayer.GlobalPosition) <= 500.0f;
+}
+```
+
 ---
 
 ## 2. Property Synchronization
@@ -316,6 +335,82 @@ func _send_input_to_server(dir: Vector2, tick: int) -> void:
     )
 ```
 
+### Pattern (C#)
+
+```csharp
+// PredictedPlayer.cs — authority is the server; this runs on the local client
+using Godot;
+using System.Collections.Generic;
+using System.Linq;
+
+public partial class PredictedPlayer : CharacterBody2D
+{
+    [Export] public float Speed { get; set; } = 200.0f;
+
+    // Ring buffer of unacknowledged inputs indexed by tick number.
+    private readonly Dictionary<int, (Vector2 Dir, double Delta)> _pendingInputs = new();
+    private int _currentTick;
+
+    // Last server-confirmed state.
+    private Vector2 _serverPosition = Vector2.Zero;
+    private int _serverTick = -1;
+
+    public override void _PhysicsProcess(double delta)
+    {
+        var inputDir = Input.GetVector("ui_left", "ui_right", "ui_up", "ui_down");
+
+        // 1. Predict: apply input locally right now.
+        ApplyInput(inputDir, delta);
+
+        // 2. Store input so we can replay it if the server corrects us.
+        _pendingInputs[_currentTick] = (inputDir, delta);
+        _currentTick++;
+
+        // 3. Send input to server every frame (or batch at a lower rate).
+        if (Multiplayer.IsServer())
+            return;
+        RpcId(1, MethodName.SendInputToServer, inputDir, _currentTick - 1);
+    }
+
+    private void ApplyInput(Vector2 dir, double delta)
+    {
+        Velocity = dir * Speed;
+        MoveAndSlide();
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
+    private void ReceiveServerCorrection(Vector2 correctedPos, int ackTick)
+    {
+        _serverPosition = correctedPos;
+        _serverTick = ackTick;
+
+        // Drop all inputs the server has already processed.
+        foreach (var tick in _pendingInputs.Keys.Where(t => t <= ackTick).ToList())
+            _pendingInputs.Remove(tick);
+
+        // Reconcile: rewind to server position then replay pending inputs.
+        GlobalPosition = _serverPosition;
+        foreach (var tick in _pendingInputs.Keys.OrderBy(t => t))
+        {
+            var inp = _pendingInputs[tick];
+            ApplyInput(inp.Dir, inp.Delta);
+        }
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
+    private void SendInputToServer(Vector2 dir, int tick)
+    {
+        // Server receives client input, simulates, then confirms.
+        ApplyInput(dir, GetPhysicsProcessDeltaTime());
+        RpcId(
+            Multiplayer.GetRemoteSenderId(),
+            MethodName.ReceiveServerCorrection,
+            GlobalPosition,
+            tick);
+    }
+}
+```
+
 **Key points:**
 - Keep `_pending_inputs` bounded — evict entries older than a reasonable window (e.g. 128 ticks).
 - Only reconcile if the corrected position differs from the predicted position by more than a threshold (e.g. 2 px / 0.05 m) to avoid jitter on micro-corrections.
@@ -408,6 +503,80 @@ func _get_player(peer_id: int) -> Node2D:
     return get_tree().get_first_node_in_group("player_%d" % peer_id) as Node2D
 ```
 
+### Code Sketch (C#)
+
+```csharp
+// LagCompensationManager.cs — runs on the server only
+using Godot;
+using System.Collections.Generic;
+using System.Linq;
+
+public partial class LagCompensationManager : Node
+{
+    private const float HistoryDurationSec = 0.5f;
+    private const float PhysicsTickRate = 60.0f;
+
+    // history[tick] = { peerId -> position }
+    private readonly Dictionary<int, Dictionary<int, Vector2>> _positionHistory = new();
+    private int _currentTick;
+
+    public override void _PhysicsProcess(double delta)
+    {
+        if (!Multiplayer.IsServer())
+            return;
+
+        // Snapshot every peer's position this tick.
+        var snapshot = new Dictionary<int, Vector2>();
+        foreach (int peerId in Multiplayer.GetPeers())
+        {
+            var player = GetPlayer(peerId);
+            if (player is not null)
+                snapshot[peerId] = player.GlobalPosition;
+        }
+
+        _positionHistory[_currentTick] = snapshot;
+        _currentTick++;
+
+        // Prune old history beyond the keep window.
+        int oldestKept = _currentTick - (int)(HistoryDurationSec * PhysicsTickRate);
+        foreach (int oldTick in _positionHistory.Keys.Where(t => t < oldestKept).ToList())
+            _positionHistory.Remove(oldTick);
+    }
+
+    public bool ValidateShot(
+        int shooterId,
+        int targetId,
+        Vector3 shotOrigin,
+        Vector3 shotDirection,
+        int clientTick)
+    {
+        if (!_positionHistory.TryGetValue(clientTick, out var snapshot))
+            return false;
+
+        if (!snapshot.TryGetValue(targetId, out Vector2 rewoundPos))
+            return false;
+
+        float hitRadius = 32.0f;
+        Vector2 closestPoint = ClosestPointOnRay(shotOrigin, shotDirection, rewoundPos);
+        return closestPoint.DistanceTo(rewoundPos) <= hitRadius;
+    }
+
+    private static Vector2 ClosestPointOnRay(Vector3 origin, Vector3 direction, Vector2 point)
+    {
+        // Project 2D point onto 2D ray (top-down example).
+        var o = new Vector2(origin.X, origin.Z);
+        Vector2 d = new Vector2(direction.X, direction.Z).Normalized();
+        float t = (point - o).Dot(d);
+        return o + d * Mathf.Max(t, 0.0f);
+    }
+
+    private Node2D GetPlayer(int peerId)
+    {
+        return GetTree().GetFirstNodeInGroup($"player_{peerId}") as Node2D;
+    }
+}
+```
+
 **Production considerations:**
 - Store full `Transform` (not just position) for 3D games so rotation is also rewound.
 - Apply hit validation on the server only; never trust hit reports from clients.
@@ -447,6 +616,15 @@ func _ready() -> void:
     sync.delta_interval        = 0.05  # Changed properties every 50 ms
 ```
 
+```csharp
+public override void _Ready()
+{
+    var sync = GetNode<MultiplayerSynchronizer>("MultiplayerSynchronizer");
+    sync.ReplicationInterval = 1.0;  // Full state every 1 s as fallback
+    sync.DeltaInterval       = 0.05; // Changed properties every 50 ms
+}
+```
+
 ### Quantize Floats
 
 Reduce float precision before sending. A 16-bit integer covers ±32767 cm — more than enough for most game worlds.
@@ -458,6 +636,19 @@ func quantize(value: float) -> int:
 
 func dequantize(value: int) -> float:
     return float(value) / 100.0
+```
+
+```csharp
+// Encode a position component to a 16-bit integer (1 cm precision, +/-327 m range).
+public static int Quantize(float value)
+{
+    return Mathf.Clamp((int)(value * 100.0f), -32768, 32767);
+}
+
+public static float Dequantize(int value)
+{
+    return value / 100.0f;
+}
 ```
 
 ### Distance-Based Sync Rate
@@ -481,6 +672,26 @@ func update_sync_intervals(local_player: Node2D) -> void:
             multiplayer_sync.replication_interval = 0.5    # 2 Hz  — distant
 ```
 
+```csharp
+// DistanceSyncManager.cs — call from a timer or _PhysicsProcess
+public void UpdateSyncIntervals(Node2D localPlayer)
+{
+    foreach (Node syncNode in GetTree().GetNodesInGroup("synced_objects"))
+    {
+        if (syncNode.GetParent() is not Node2D obj)
+            continue;
+        float dist = localPlayer.GlobalPosition.DistanceTo(obj.GlobalPosition);
+        var multiplayerSync = (MultiplayerSynchronizer)syncNode;
+        if (dist < 200.0f)
+            multiplayerSync.ReplicationInterval = 0.05;  // 20 Hz — nearby
+        else if (dist < 600.0f)
+            multiplayerSync.ReplicationInterval = 0.1;   // 10 Hz — medium
+        else
+            multiplayerSync.ReplicationInterval = 0.5;   // 2 Hz  — distant
+    }
+}
+```
+
 ### Reliable vs Unreliable Channels
 
 | Data Type | Channel | Why |
@@ -500,6 +711,20 @@ func update_position(pos: Vector2) -> void:
 @rpc("any_peer", "call_remote", "reliable")
 func take_damage(amount: int) -> void:
     synced_health -= amount
+```
+
+```csharp
+[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
+private void UpdatePosition(Vector2 pos)
+{
+    SyncedPosition = pos;
+}
+
+[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+private void TakeDamage(int amount)
+{
+    SyncedHealth -= amount;
+}
 ```
 
 ---

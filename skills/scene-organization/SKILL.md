@@ -7,6 +7,8 @@ description: Use when designing scene tree structure — composition vs inherita
 
 A guide for structuring Godot 4.3+ scene trees: when to split, when to compose, and how nodes should communicate.
 
+> **Related skills:** **component-system** for composition patterns, **event-bus** for decoupled communication, **godot-brainstorming** for scene tree planning.
+
 ---
 
 ## 1. Core Principle

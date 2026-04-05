@@ -7,6 +7,8 @@ description: Use when optimizing Godot games — profiler, draw calls, physics t
 
 This skill covers performance optimization for Godot 4.3+ projects in both GDScript and C#. It covers the built-in profiler, draw call reduction, physics tuning, GDScript performance patterns, memory management, object pooling, and a reference table of common bottlenecks.
 
+> **Related skills:** **godot-debugging** for systematic debugging and profiling, **godot-code-review** for performance review checklist, **export-pipeline** for release build optimization.
+
 ---
 
 ## 1. Using the Profiler
@@ -39,6 +41,24 @@ var elapsed := Time.get_ticks_usec() - start
 print("_run_expensive_operation: %d µs" % elapsed)
 ```
 
+**C#:**
+
+```csharp
+// Manual micro-benchmark using Stopwatch (high-resolution timer)
+using System.Diagnostics;
+
+var sw = Stopwatch.StartNew();
+RunExpensiveOperation();
+sw.Stop();
+GD.Print($"RunExpensiveOperation: {sw.Elapsed.TotalMilliseconds:F3} ms");
+
+// Alternative using Godot's built-in timer (microsecond precision)
+long start = (long)Time.GetTicksUsec();
+RunExpensiveOperation();
+long elapsed = (long)Time.GetTicksUsec() - start;
+GD.Print($"RunExpensiveOperation: {elapsed} µs");
+```
+
 ### Monitors Tab
 
 **Debugger > Monitors** shows real-time engine metrics while the game is running. Click a monitor name to open a live graph. Key monitors to watch:
@@ -59,6 +79,16 @@ var fps := Performance.get_monitor(Performance.TIME_FPS)
 var draw_calls := Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)
 var video_ram := Performance.get_monitor(Performance.RENDER_VIDEO_MEM_USED)
 print("FPS: %d | Draw calls: %d | VRAM: %.1f MB" % [fps, draw_calls, video_ram / 1_048_576.0])
+```
+
+**C#:**
+
+```csharp
+// Query any monitor at runtime from code
+double fps = Performance.GetMonitor(Performance.Monitor.TimeFps);
+double drawCalls = Performance.GetMonitor(Performance.Monitor.RenderTotalDrawCallsInFrame);
+double videoRam = Performance.GetMonitor(Performance.Monitor.RenderVideoMemUsed);
+GD.Print($"FPS: {fps:F0} | Draw calls: {drawCalls:F0} | VRAM: {videoRam / 1_048_576.0:F1} MB");
 ```
 
 ---
@@ -104,6 +134,28 @@ func _ready() -> void:
     $MeshInstance3D.material_override = mat
 ```
 
+**C#:**
+
+```csharp
+// WRONG — creating a new material per instance duplicates draw calls
+public override void _Ready()
+{
+    var mat = new StandardMaterial3D();
+    mat.AlbedoColor = new Color(GD.Randf(), GD.Randf(), GD.Randf());
+    GetNode<MeshInstance3D>("MeshInstance3D").MaterialOverride = mat; // unique draw call
+}
+
+// RIGHT — vary colour via a shader parameter on a shared material
+[Export] public ShaderMaterial SharedMaterial { get; set; }
+
+public override void _Ready()
+{
+    var mat = (ShaderMaterial)SharedMaterial.Duplicate();
+    mat.SetShaderParameter("tint", new Color(GD.Randf(), GD.Randf(), GD.Randf()));
+    GetNode<MeshInstance3D>("MeshInstance3D").MaterialOverride = mat;
+}
+```
+
 For 3D scenes, enable **Rendering > Mesh LOD** and use `GeometryInstance3D.gi_mode = BAKE_STATIC` where possible to let the engine merge static geometry.
 
 ### Texture Atlases
@@ -136,6 +188,27 @@ func _on_screen_exited() -> void:
     set_process(false)
 ```
 
+**C#:**
+
+```csharp
+// 2D — VisibleOnScreenNotifier2D pauses processing when the node leaves the viewport
+public partial class CulledSprite : Sprite2D
+{
+    private VisibleOnScreenNotifier2D _vis;
+
+    public override void _Ready()
+    {
+        _vis = GetNode<VisibleOnScreenNotifier2D>("VisibleOnScreenNotifier2D");
+        _vis.ScreenEntered += OnScreenEntered;
+        _vis.ScreenExited += OnScreenExited;
+        SetProcess(false); // start paused; enable only when visible
+    }
+
+    private void OnScreenEntered() => SetProcess(true);
+    private void OnScreenExited() => SetProcess(false);
+}
+```
+
 ```gdscript
 # 3D — VisibleOnScreenNotifier3D works identically
 extends Node3D
@@ -148,6 +221,22 @@ func _ready() -> void:
     set_process(false)
 ```
 
+**C#:**
+
+```csharp
+// 3D — VisibleOnScreenNotifier3D works identically
+public partial class CulledNode3D : Node3D
+{
+    public override void _Ready()
+    {
+        var vis = GetNode<VisibleOnScreenNotifier3D>("VisibleOnScreenNotifier3D");
+        vis.ScreenEntered += () => SetProcess(true);
+        vis.ScreenExited += () => SetProcess(false);
+        SetProcess(false);
+    }
+}
+```
+
 You can also query visibility directly:
 
 ```gdscript
@@ -156,6 +245,18 @@ func _process(_delta: float) -> void:
     if not $VisibleOnScreenNotifier2D.is_on_screen():
         return
     _run_expensive_animation_logic()
+```
+
+**C#:**
+
+```csharp
+// Only update expensive logic when the node is visible on screen
+public override void _Process(double delta)
+{
+    if (!GetNode<VisibleOnScreenNotifier2D>("VisibleOnScreenNotifier2D").IsOnScreen())
+        return;
+    RunExpensiveAnimationLogic();
+}
 ```
 
 ### LOD for 3D
@@ -171,6 +272,21 @@ func _process(_delta: float) -> void:
     var dist := global_position.distance_to(_camera.global_position)
     $HighPolyMesh.visible = dist < lod_distance
     $LowPolyMesh.visible = dist >= lod_distance
+```
+
+**C#:**
+
+```csharp
+// Manually swap mesh at distance
+[Export] public float LodDistance { get; set; } = 50.0f;
+
+public override void _Process(double delta)
+{
+    var camera = GetViewport().GetCamera3D();
+    float dist = GlobalPosition.DistanceTo(camera.GlobalPosition);
+    GetNode<MeshInstance3D>("HighPolyMesh").Visible = dist < LodDistance;
+    GetNode<MeshInstance3D>("LowPolyMesh").Visible = dist >= LodDistance;
+}
 ```
 
 For automatic LOD: set `GeometryInstance3D.lod_bias` and enable **Rendering > Mesh LOD** in Project Settings. Godot 4 generates LOD levels automatically during import if **Import > Generate LODs** is enabled on the mesh asset.
@@ -243,6 +359,16 @@ func _ready() -> void:
 Engine.max_physics_steps_per_frame = 4
 ```
 
+**C#:**
+
+```csharp
+public override void _Ready()
+{
+    Engine.PhysicsTicksPerSecond = 30;
+    Engine.MaxPhysicsStepsPerFrame = 4;
+}
+```
+
 Change project-wide defaults in **Project Settings > Physics > Common > Physics Ticks Per Second** and **Max Physics Steps Per Frame**.
 
 ### Area2D for Detection vs Raycasts
@@ -266,6 +392,32 @@ func _on_body_exited(body: Node2D) -> void:
         _end_aggro()
 ```
 
+**C#:**
+
+```csharp
+// PREFER Area2D for "is the player in range?" checks
+public partial class AggroZone : Area2D
+{
+    public override void _Ready()
+    {
+        BodyEntered += OnBodyEntered;
+        BodyExited += OnBodyExited;
+    }
+
+    private void OnBodyEntered(Node2D body)
+    {
+        if (body.IsInGroup("player"))
+            BeginAggro(body);
+    }
+
+    private void OnBodyExited(Node2D body)
+    {
+        if (body.IsInGroup("player"))
+            EndAggro();
+    }
+}
+```
+
 ```gdscript
 # Use raycasts only when you need directionality or line-of-sight checks,
 # and cache the RayCast2D/3D node — do NOT create PhysicsRayQueryParameters
@@ -277,9 +429,29 @@ func _physics_process(_delta: float) -> void:
         _handle_hit(_ray.get_collider())
 ```
 
+**C#:**
+
+```csharp
+// Cache the RayCast3D node — do NOT create PhysicsRayQueryParameters every frame
+private RayCast3D _ray;
+
+public override void _Ready()
+{
+    _ray = GetNode<RayCast3D>("RayCast3D");
+}
+
+public override void _PhysicsProcess(double delta)
+{
+    if (_ray.IsColliding())
+        HandleHit(_ray.GetCollider());
+}
+```
+
 ---
 
 ## 4. GDScript Performance
+
+> The patterns in this section are GDScript-specific, but the underlying principles (avoid per-frame allocations, use efficient comparisons, prefer typed collections) apply equally to C#. Each subsection includes a C# equivalent where the translation is non-trivial.
 
 ### Avoid Allocations in _process
 
@@ -312,6 +484,46 @@ func _process(_delta: float) -> void:
         _check_aggro(enemy)
 ```
 
+**C#:**
+
+```csharp
+// WRONG — querying the group every frame allocates a new Godot.Collections.Array
+public override void _Process(double delta)
+{
+    var nearby = GetTree().GetNodesInGroup("enemies"); // new array each call
+    foreach (var enemy in nearby)
+        CheckAggro(enemy);
+}
+
+// RIGHT — cache the list and maintain it via signals
+private readonly List<Node> _enemies = new();
+
+public override void _Ready()
+{
+    foreach (var node in GetTree().GetNodesInGroup("enemies"))
+        _enemies.Add(node);
+    GetTree().NodeAdded += OnNodeAdded;
+    GetTree().NodeRemoved += OnNodeRemoved;
+}
+
+private void OnNodeAdded(Node node)
+{
+    if (node.IsInGroup("enemies"))
+        _enemies.Add(node);
+}
+
+private void OnNodeRemoved(Node node)
+{
+    _enemies.Remove(node);
+}
+
+public override void _Process(double delta)
+{
+    foreach (var enemy in _enemies) // no allocation
+        CheckAggro(enemy);
+}
+```
+
 ```gdscript
 # WRONG — constructing temporary vectors in a tight loop
 func _process(_delta: float) -> void:
@@ -327,6 +539,24 @@ func _process(_delta: float) -> void:
         _offset.x = i * 10.0
         _offset.y = 0.0
         _draw_marker(position + _offset)
+```
+
+**C#:**
+
+```csharp
+// In C#, Vector2 is a struct (value type) — no heap allocation in either case.
+// However, avoiding repeated constructor calls is still marginally faster.
+private Vector2 _offset;
+
+public override void _Process(double delta)
+{
+    for (int i = 0; i < 100; i++)
+    {
+        _offset.X = i * 10.0f;
+        _offset.Y = 0.0f;
+        DrawMarker(Position + _offset);
+    }
+}
 ```
 
 ### Use StringName for Comparisons
@@ -345,6 +575,19 @@ func _on_body_entered(body: Node) -> void:
         _start_aggro()
 ```
 
+**C#:**
+
+```csharp
+// StringName in C# — cache as a static readonly field for O(1) comparison
+private static readonly StringName PlayerName = new("Player");
+
+private void OnBodyEntered(Node body)
+{
+    if (body.Name == PlayerName) // interned comparison
+        StartAggro();
+}
+```
+
 ```gdscript
 # Cache StringName constants at the class level for repeated use
 const ACTION_JUMP := &"jump"
@@ -356,6 +599,23 @@ func _process(_delta: float) -> void:
         _jump()
     if Input.is_action_just_pressed(ACTION_FIRE):
         _fire()
+```
+
+**C#:**
+
+```csharp
+// Cache StringName constants as static readonly fields
+private static readonly StringName ActionJump = new("jump");
+private static readonly StringName ActionFire = new("fire");
+private static readonly StringName GroupEnemies = new("enemies");
+
+public override void _Process(double delta)
+{
+    if (Input.IsActionPressed(ActionJump))
+        Jump();
+    if (Input.IsActionJustPressed(ActionFire))
+        Fire();
+}
 ```
 
 ### Typed Arrays
@@ -372,6 +632,23 @@ var bullets: Array[Bullet] = []
 # PackedArrays are the most efficient for value types — stored as contiguous memory
 var positions: PackedVector2Array = PackedVector2Array()
 var velocities: PackedFloat32Array = PackedFloat32Array()
+```
+
+**C#:**
+
+```csharp
+// C# is statically typed — use concrete generic collections for best performance.
+// Avoid Godot.Collections.Array (untyped) in hot paths; prefer List<T> or arrays.
+
+// Untyped Godot collection — boxing and type checks on every access
+Godot.Collections.Array bullets = new();
+
+// Typed .NET collection — no boxing, cache-friendly
+List<Bullet> bullets = new();
+
+// For value types, use plain arrays for maximum throughput (contiguous memory)
+Vector2[] positions = new Vector2[256];
+float[] velocities = new float[256];
 ```
 
 ### Static Typing Benefits
@@ -439,6 +716,26 @@ func _print_memory_stats() -> void:
     print("Nodes      : %d" % node_count)
 ```
 
+**C#:**
+
+```csharp
+// Query engine memory monitors via Performance singleton
+private void PrintMemoryStats()
+{
+    double staticMem = Performance.GetMonitor(Performance.Monitor.MemoryStatic);
+    double dynamicMem = Performance.GetMonitor(Performance.Monitor.MemoryDynamic);
+    double videoRam = Performance.GetMonitor(Performance.Monitor.RenderVideoMemUsed);
+    double objCount = Performance.GetMonitor(Performance.Monitor.ObjectCount);
+    double nodeCount = Performance.GetMonitor(Performance.Monitor.ObjectNodeCount);
+
+    GD.Print($"Static RAM : {staticMem / 1_048_576.0:F2} MB");
+    GD.Print($"Dynamic RAM: {dynamicMem / 1_048_576.0:F2} MB");
+    GD.Print($"Video RAM  : {videoRam / 1_048_576.0:F2} MB");
+    GD.Print($"Objects    : {objCount:F0}");
+    GD.Print($"Nodes      : {nodeCount:F0}");
+}
+```
+
 Watch for `MEMORY_STATIC` growing between identical scene loads — this usually means a resource is held by a long-lived reference.
 
 ### ResourceLoader Caching Behaviour
@@ -491,6 +788,25 @@ var texture: ImageTexture = ImageTexture.new()
 # Non-node Object (not RefCounted) — must be freed manually
 var raw_obj := Object.new()
 raw_obj.free()
+```
+
+**C#:**
+
+```csharp
+// Nodes: always use QueueFree() unless you need synchronous teardown
+private void OnEnemyDied()
+{
+    QueueFree(); // safe — deferred until end of current frame
+}
+
+// Non-node RefCounted resources are freed automatically when the last
+// reference is released (C# GC + Godot ref counting work together).
+ImageTexture texture = new();
+// texture is freed when it goes out of scope or is set to null
+
+// Non-node GodotObject (not RefCounted) — must be freed manually
+var rawObj = new GodotObject();
+rawObj.Free();
 ```
 
 ### queue_free vs free

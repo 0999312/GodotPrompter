@@ -7,6 +7,8 @@ description: Use when managing dependencies between systems — autoloads, servi
 
 Patterns for wiring dependencies between systems so nodes stay loosely coupled, swappable, and testable. All examples target Godot 4.3+ with no deprecated APIs.
 
+> **Related skills:** **godot-testing** for test-friendly architecture, **event-bus** for signal-based decoupling, **godot-project-setup** for autoload registration.
+
 ---
 
 ## 1. The Problem

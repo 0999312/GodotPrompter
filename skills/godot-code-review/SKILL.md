@@ -7,6 +7,8 @@ description: Use when reviewing GDScript or C# Godot code — checklist of best 
 
 A structured review guide for Godot 4.3+ projects covering GDScript and C#. Work through each checklist section, then produce a review summary using the output template at the end.
 
+> **Related skills:** **godot-testing** for TDD and test coverage, **scene-organization** for scene tree best practices, **godot-optimization** for performance review.
+
 ---
 
 ## 1. Node & Scene Architecture
@@ -25,6 +27,14 @@ func take_damage(amount: int) -> void:
     get_parent().get_parent().get_node("HUD").update_health(health)
 ```
 
+```csharp
+// BAD: tight coupling, breaks if the tree changes
+public void TakeDamage(int amount)
+{
+    GetParent().GetParent().GetNode("HUD").Call("UpdateHealth", _health);
+}
+```
+
 ### Fix — emit a signal instead
 
 ```gdscript
@@ -34,6 +44,18 @@ signal health_changed(new_health: int)
 func take_damage(amount: int) -> void:
     health -= amount
     health_changed.emit(health)
+```
+
+```csharp
+// GOOD: parent/ancestor listens; child stays decoupled
+[Signal]
+public delegate void HealthChangedEventHandler(int newHealth);
+
+public void TakeDamage(int amount)
+{
+    _health -= amount;
+    EmitSignal(SignalName.HealthChanged, _health);
+}
 ```
 
 ---
@@ -61,6 +83,23 @@ func heal(amount):
     return health
 ```
 
+```csharp
+// BAD: no explicit types, weak contracts
+float speed = 200;
+int health = 100;
+
+public void Move(object direction)
+{
+    Position += (Vector2)direction * speed;
+}
+
+public object Heal(object amount)
+{
+    health += (int)amount;
+    return health;
+}
+```
+
 ### Good — typed
 
 ```gdscript
@@ -86,6 +125,43 @@ func heal(amount: int) -> int:
     health = mini(health + amount, max_health)
     health_changed.emit(health)
     return health
+```
+
+```csharp
+// GOOD: strongly typed, proper C# conventions
+public partial class PlayerController : CharacterBody2D
+{
+    [Signal]
+    public delegate void HealthChangedEventHandler(int newHealth);
+    [Signal]
+    public delegate void PlayerDiedEventHandler();
+
+    private const int MaxHealth = 100;
+    private const float BaseSpeed = 200f;
+
+    [Export] public float Speed { get; set; } = BaseSpeed;
+    [Export] public int MaxHp { get; set; } = MaxHealth;
+
+    private int _health;
+
+    public override void _Ready()
+    {
+        _health = MaxHp;
+    }
+
+    public void Move(Vector2 direction)
+    {
+        Velocity = direction * Speed;
+        MoveAndSlide();
+    }
+
+    public int Heal(int amount)
+    {
+        _health = Mathf.Min(_health + amount, MaxHp);
+        EmitSignal(SignalName.HealthChanged, _health);
+        return _health;
+    }
+}
 ```
 
 ---
@@ -147,6 +223,15 @@ func _process(delta: float) -> void:
     get_node("HUD/Label").text = str(health)
 ```
 
+```csharp
+// BAD: GetNode() traverses the tree every frame
+public override void _Process(double delta)
+{
+    GetNode<ProgressBar>("HUD/HealthBar").Value = _health;
+    GetNode<Label>("HUD/Label").Text = _health.ToString();
+}
+```
+
 ### Fix — cache with `@onready`
 
 ```gdscript
@@ -159,6 +244,24 @@ func _process(delta: float) -> void:
     _health_label.text = str(health)
 ```
 
+```csharp
+// GOOD: resolved once in _Ready()
+private ProgressBar _healthBar = null!;
+private Label _healthLabel = null!;
+
+public override void _Ready()
+{
+    _healthBar = GetNode<ProgressBar>("HUD/HealthBar");
+    _healthLabel = GetNode<Label>("HUD/Label");
+}
+
+public override void _Process(double delta)
+{
+    _healthBar.Value = _health;
+    _healthLabel.Text = _health.ToString();
+}
+```
+
 ### StringName in hot paths
 
 ```gdscript
@@ -169,6 +272,19 @@ if animation_name == "run":
 # GOOD: StringName literal, no allocation
 if animation_name == &"run":
     pass
+```
+
+```csharp
+// BAD: allocates a new StringName each frame
+if (animationName == "run") { }
+
+// GOOD: cache StringName as a static field
+private static readonly StringName RunAnim = new("run");
+
+public override void _Process(double delta)
+{
+    if (animationName == RunAnim) { }
+}
 ```
 
 ---
@@ -195,6 +311,27 @@ func _unhandled_input(event: InputEvent) -> void:
         _jump()
 ```
 
+```csharp
+// Continuous movement — physics process
+public override void _PhysicsProcess(double delta)
+{
+    Vector2 direction = Input.GetVector(
+        "ui_left", "ui_right", "ui_up", "ui_down"
+    );
+    Velocity = direction * Speed;
+    MoveAndSlide();
+}
+
+// Discrete action — unhandled input
+public override void _UnhandledInput(InputEvent @event)
+{
+    if (@event.IsActionPressed("jump"))
+    {
+        Jump();
+    }
+}
+```
+
 ---
 
 ## 6. Signals & Communication
@@ -216,11 +353,35 @@ signal item_collected(item: ItemData)     # past tense
 # signal collect_item(item: ItemData)
 ```
 
+```csharp
+// Good signal names — past tense, EventHandler suffix
+[Signal]
+public delegate void HealthChangedEventHandler(int newHealth);
+[Signal]
+public delegate void EnemyDiedEventHandler();
+[Signal]
+public delegate void ItemCollectedEventHandler(ItemData item);
+
+// Bad signal names (present/imperative tense)
+// public delegate void UpdateHealthEventHandler(int value);
+// public delegate void DieEventHandler();
+// public delegate void CollectItemEventHandler(ItemData item);
+```
+
 ```gdscript
 # Parent connects to child signal in _ready()
 func _ready() -> void:
     $Enemy.enemy_died.connect(_on_enemy_died)
     $Player.health_changed.connect(_on_player_health_changed)
+```
+
+```csharp
+// Parent connects to child signal in _Ready()
+public override void _Ready()
+{
+    GetNode<Enemy>("Enemy").EnemyDied += OnEnemyDied;
+    GetNode<Player>("Player").HealthChanged += OnPlayerHealthChanged;
+}
 ```
 
 ---
@@ -247,6 +408,33 @@ func _check_load(path: String) -> void:
 # Cleanup
 func _on_enemy_died() -> void:
     queue_free()   # safe — deferred until end of frame
+```
+
+```csharp
+// Compile-time equivalent — load once in a static field or _Ready()
+private static readonly PackedScene BulletScene =
+    GD.Load<PackedScene>("res://scenes/bullet.tscn");
+
+// Runtime — path comes from data
+private void LoadLevel(string path)
+{
+    ResourceLoader.LoadThreadedRequest(path);
+}
+
+private void CheckLoad(string path)
+{
+    if (ResourceLoader.LoadThreadedGetStatus(path) == ResourceLoader.ThreadLoadStatus.Loaded)
+    {
+        var scene = ResourceLoader.LoadThreadedGet(path) as PackedScene;
+        GetTree().ChangeSceneToPacked(scene);
+    }
+}
+
+// Cleanup
+private void OnEnemyDied()
+{
+    QueueFree(); // safe — deferred until end of frame
+}
 ```
 
 ---

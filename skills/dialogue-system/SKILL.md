@@ -7,6 +7,8 @@ description: Use when implementing dialogue — data structures for branching di
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, then C#.
 
+> **Related skills:** **resource-pattern** for dialogue data as Resources, **godot-ui** for Control node layout, **state-machine** for dialogue flow management, **save-load** for dialogue state persistence.
+
 ---
 
 ## 1. Architecture Overview

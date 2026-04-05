@@ -7,6 +7,8 @@ description: Use when debugging Godot projects — remote debugger, print techni
 
 This skill covers systematic debugging for Godot 4.3+ projects in both GDScript and C#. It covers print techniques, breakpoints, signal tracing, the built-in profiler, scene tree inspection, common error patterns, and a step-by-step debugging checklist.
 
+> **Related skills:** **godot-optimization** for performance profiling, **godot-testing** for regression tests after fixes, **csharp-signals** for C# signal debugging patterns.
+
 ---
 
 ## 1. Print Debugging
@@ -54,6 +56,19 @@ print("Inventory: ", str(inventory))
 # Conditional verbose logging using a project-level constant or autoload flag
 if DebugConfig.verbose_ai:
     print_rich("[color=cyan][AI][/color] ", agent.name, " chose action: ", chosen_action)
+```
+
+```csharp
+// String interpolation
+GD.Print($"Actor [{Name}] dealt {damage} damage to [{target.Name}]");
+
+// Printing collections
+var inventory = new Godot.Collections.Dictionary { { "sword", 1 }, { "potion", 3 } };
+GD.Print("Inventory: ", inventory);
+
+// Conditional verbose logging
+if (DebugConfig.VerboseAi)
+    GD.PrintRich($"[color=cyan][AI][/color] {agent.Name} chose action: {chosenAction}");
 ```
 
 **When to use each function:**
@@ -188,18 +203,27 @@ for sig in get_signal_list():
 ### C\#
 
 ```csharp
-// Check connections in C#
+// List all connections on a signal
 var connections = healthComponent.GetSignalConnectionList("HealthChanged");
 foreach (var conn in connections)
 {
     GD.Print("HealthChanged connected to: ", conn["callable"]);
 }
 
+// Check whether a specific callable is connected
 bool isConnected = healthComponent.IsConnected(
     HealthComponent.SignalName.HealthChanged,
     new Callable(this, MethodName.OnHealthChanged)
 );
 GD.Print("Connected: ", isConnected);
+
+// List all signals a node has emitted connections for
+foreach (var sig in GetSignalList())
+{
+    var conns = GetSignalConnectionList(sig["name"].AsStringName());
+    if (conns.Count > 0)
+        GD.Print($"Signal '{sig["name"]}': {conns.Count} connection(s)");
+}
 ```
 
 ### Common Signal Issues
@@ -216,6 +240,17 @@ assert("dead" in enemy.get_signal_list().map(func(s): return s["name"]),
 enemy.dead.connect(_on_enemy_dead)
 ```
 
+```csharp
+// WRONG — connecting to a signal that does not exist (typo or wrong node type)
+enemy.Connect("Dead", new Callable(this, MethodName.OnEnemyDead)); // silent failure
+
+// RIGHT — verify signal exists before connecting
+System.Diagnostics.Debug.Assert(
+    enemy.HasSignal("Dead"),
+    $"Signal 'Dead' not found on {enemy.Name}");
+enemy.Connect(Enemy.SignalName.Dead, new Callable(this, MethodName.OnEnemyDead));
+```
+
 **Wrong argument count or types**
 
 ```gdscript
@@ -229,6 +264,17 @@ func _on_item_picked_up() -> void:
 # RIGHT — signature must match
 func _on_item_picked_up(item: Item) -> void:
     print("picked up: ", item.display_name)
+```
+
+```csharp
+// Signal declared with one argument
+[Signal] public delegate void ItemPickedUpEventHandler(Item item);
+
+// WRONG receiver — missing parameter causes argument count error
+private void OnItemPickedUp() { GD.Print("picked up something"); }
+
+// RIGHT — signature must match the delegate
+private void OnItemPickedUp(Item item) { GD.Print("picked up: ", item.DisplayName); }
 ```
 
 **Signal connected to a freed node**
@@ -250,6 +296,34 @@ some_node.some_signal.connect(func():
 )
 ```
 
+```csharp
+// Use CONNECT_ONE_SHOT for single-fire connections to avoid stale connections
+enemy.Connect(Enemy.SignalName.Died,
+    new Callable(this, MethodName.OnEnemyDied),
+    (uint)GodotObject.ConnectFlags.OneShot);
+
+// Or disconnect explicitly before freeing
+public override void _ExitTree()
+{
+    if (healthComponent.IsConnected(
+        HealthComponent.SignalName.HealthChanged,
+        new Callable(this, MethodName.OnHealthChanged)))
+    {
+        healthComponent.Disconnect(
+            HealthComponent.SignalName.HealthChanged,
+            new Callable(this, MethodName.OnHealthChanged));
+    }
+}
+
+// Guard lambda captures with IsInstanceValid
+someNode.Connect(SomeNode.SignalName.SomeSignal,
+    Callable.From(() =>
+    {
+        if (GodotObject.IsInstanceValid(this))
+            DoWork();
+    }));
+```
+
 **Signal emitted before receiver is ready**
 
 ```gdscript
@@ -260,6 +334,20 @@ func _ready() -> void:
 
 func _emit_ready_signal() -> void:
     game_ready.emit()
+```
+
+```csharp
+// Autoload emits a signal during _Ready before the main scene is fully loaded
+// FIX — defer emission to the next frame
+public override void _Ready()
+{
+    CallDeferred(MethodName.EmitReadySignal);
+}
+
+private void EmitReadySignal()
+{
+    EmitSignal(SignalName.GameReady);
+}
 ```
 
 ---
@@ -300,6 +388,14 @@ var elapsed := Time.get_ticks_usec() - start
 print("_run_expensive_operation took: %d µs" % elapsed)
 ```
 
+```csharp
+// Profile a specific block manually
+long start = Time.GetTicksUsec();
+RunExpensiveOperation();
+long elapsed = Time.GetTicksUsec() - start;
+GD.Print($"RunExpensiveOperation took: {elapsed} µs");
+```
+
 ### Monitors
 
 **Debugger > Monitors** — key metrics to watch:
@@ -331,6 +427,21 @@ func _on_screen_exited() -> void:
     set_process(false)
 ```
 
+```csharp
+// Reduce draw calls with VisibleOnScreenNotifier3D — pause processing when off-screen
+private VisibleOnScreenNotifier3D _vis;
+
+public override void _Ready()
+{
+    _vis = GetNode<VisibleOnScreenNotifier3D>("VisibleOnScreenNotifier3D");
+    _vis.ScreenEntered += OnScreenEntered;
+    _vis.ScreenExited += OnScreenExited;
+}
+
+private void OnScreenEntered() => SetProcess(true);
+private void OnScreenExited() => SetProcess(false);
+```
+
 - Enable **Rendering > Debug > Draw Calls** in the editor Viewport menu to visualise batching.
 - Use `RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME)` for runtime draw call counts.
 
@@ -351,6 +462,29 @@ func _process(delta: float) -> void:
               " (target: ", Engine.physics_ticks_per_second, ")")
         _physics_ticks_this_second = 0
         _second_timer -= 1.0
+```
+
+```csharp
+// Track physics ticks to detect spiral-of-death
+private int _physicsTicksThisSecond = 0;
+private double _secondTimer = 0.0;
+
+public override void _PhysicsProcess(double delta)
+{
+    _physicsTicksThisSecond++;
+}
+
+public override void _Process(double delta)
+{
+    _secondTimer += delta;
+    if (_secondTimer >= 1.0)
+    {
+        GD.Print($"Physics ticks last second: {_physicsTicksThisSecond}" +
+                 $" (target: {Engine.PhysicsTicksPerSecond})");
+        _physicsTicksThisSecond = 0;
+        _secondTimer -= 1.0;
+    }
+}
 ```
 
 - If ticks per second fall below `Engine.physics_ticks_per_second`, reduce physics complexity or lower `physics_ticks_per_second` in Project Settings.
@@ -376,6 +510,17 @@ func _ready() -> void:
     get_tree().root.print_tree_pretty()
 ```
 
+```csharp
+// Print the full subtree of a node in a readable format
+public override void _Ready()
+{
+    PrintTreePretty();
+
+    // Print the entire scene tree from root
+    GetTree().Root.PrintTreePretty();
+}
+```
+
 ### Remote Scene Tree in the Editor
 
 1. Run the game.
@@ -396,6 +541,26 @@ func _input(event: InputEvent) -> void:
     if event.is_action_pressed("debug_dump_enemies"):
         for enemy in get_tree().get_nodes_in_group("debug_enemies"):
             print(enemy.name, " HP: ", enemy.health, " pos: ", enemy.global_position)
+```
+
+```csharp
+// Tag nodes at runtime for batch inspection
+public override void _Ready()
+{
+    AddToGroup("debug_enemies");
+}
+
+public override void _Input(InputEvent @event)
+{
+    if (@event.IsActionPressed("debug_dump_enemies"))
+    {
+        foreach (var node in GetTree().GetNodesInGroup("debug_enemies"))
+        {
+            if (node is Enemy enemy)
+                GD.Print($"{enemy.Name} HP: {enemy.Health} pos: {enemy.GlobalPosition}");
+        }
+    }
+}
 ```
 
 ### _get_configuration_warnings() for @tool Scripts
@@ -460,6 +625,21 @@ func _on_enemy_died() -> void:
     print("Enemy died at frame: ", _frame_of_crash)
 ```
 
+```csharp
+// Add a counter to catch intermittent bugs
+private long _frameOfCrash = 0;
+
+public override void _Process(double delta)
+{
+    _frameOfCrash = Engine.GetProcessFrames();
+}
+
+private void OnEnemyDied()
+{
+    GD.Print("Enemy died at frame: ", _frameOfCrash);
+}
+```
+
 ### Step 2 — Isolate
 
 - Remove unrelated systems. Can you reproduce in a minimal scene with only the suspect nodes?
@@ -470,6 +650,14 @@ func _on_enemy_died() -> void:
 # Quick isolation — disable a node's script temporarily at runtime
 func _ready() -> void:
     $SuspectNode.set_script(null)  # removes script, node becomes a plain Node
+```
+
+```csharp
+// Quick isolation — disable a node's script temporarily at runtime
+public override void _Ready()
+{
+    GetNode("SuspectNode").SetScript(default);
+}
 ```
 
 ### Step 3 — Form a Hypothesis
@@ -491,6 +679,17 @@ func take_damage(amount: int) -> void:
     print("[TRACE] health after: %d" % health)
     if health <= 0:
         die()
+```
+
+```csharp
+public void TakeDamage(int amount)
+{
+    GD.Print($"[TRACE] TakeDamage called — amount: {amount}, health before: {_health}");
+    _health -= amount;
+    GD.Print($"[TRACE] health after: {_health}");
+    if (_health <= 0)
+        Die();
+}
 ```
 
 ### Step 5 — Fix
@@ -525,4 +724,15 @@ func test_take_damage_does_not_go_below_zero_regression() -> void:
     _health.take_damage(9999)
     assert_eq(_health.current_health, 0,
         "Health must clamp to 0, not go negative on overkill")
+```
+
+```csharp
+// tests/HealthComponentTest.cs (using GdUnit4 or similar C# test framework)
+[TestCase]
+public void TakeDamage_DoesNotGoBelowZero_Regression()
+{
+    // Regression: health could go negative when overkill damage was applied
+    _health.TakeDamage(9999);
+    AssertThat(_health.CurrentHealth).IsEqual(0);
+}
 ```

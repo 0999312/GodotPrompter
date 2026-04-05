@@ -7,6 +7,8 @@ description: Use when designing a new Godot feature or system — guides scene t
 
 A structured design process for Godot 4.3+ features and systems — from blank slate to a clear scene tree, signal map, and data flow before you write a single line of implementation code.
 
+> **Related skills:** **scene-organization** for scene tree composition patterns, **component-system** for component-based architecture, **event-bus** for signal-based communication design.
+
 ---
 
 ## 1. When to Use

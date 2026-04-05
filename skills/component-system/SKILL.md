@@ -7,6 +7,8 @@ description: Use when building reusable node components — composition patterns
 
 Build behavior through composition. Attach small, focused components to any entity rather than climbing an inheritance chain. All examples target Godot 4.3+ with no deprecated APIs.
 
+> **Related skills:** **scene-organization** for scene tree composition, **event-bus** for decoupled component communication, **resource-pattern** for data-driven component configuration.
+
 ---
 
 ## 1. Why Components

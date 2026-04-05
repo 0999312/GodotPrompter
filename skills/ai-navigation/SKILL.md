@@ -7,6 +7,8 @@ description: Use when implementing AI movement — NavigationAgent2D/3D, steerin
 
 Cover NavigationAgent2D/3D, steering behaviors, behavior trees, and patrol patterns. All examples target Godot 4.3+ with no deprecated APIs.
 
+> **Related skills:** **state-machine** for AI state management, **component-system** for modular AI behaviors, **player-controller** for movement physics patterns.
+
 ---
 
 ## 1. Navigation Setup
@@ -36,6 +38,14 @@ $NavigationRegion2D.bake_navigation_polygon()
 $NavigationRegion3D.bake_navigation_mesh()
 ```
 
+```csharp
+// 2D
+GetNode<NavigationRegion2D>("NavigationRegion2D").BakeNavigationPolygon();
+
+// 3D
+GetNode<NavigationRegion3D>("NavigationRegion3D").BakeNavigationMesh();
+```
+
 ### Navigation Layers
 
 Navigation layers let you separate walkable areas for different agent types (ground troops, flying units, large enemies).
@@ -48,6 +58,16 @@ Navigation layers let you separate walkable areas for different agent types (gro
 $NavigationAgent2D.navigation_layers = 1   # ground only
 $NavigationAgent2D.navigation_layers = 2   # air only
 $NavigationAgent2D.navigation_layers = 1 | 2  # both (bitwise OR)
+```
+
+```csharp
+// Assign layer bits on the NavigationRegion (Inspector or code)
+// Layer 1 = ground, Layer 2 = air, Layer 3 = large
+
+var navAgent = GetNode<NavigationAgent2D>("NavigationAgent2D");
+navAgent.NavigationLayers = 1;       // ground only
+navAgent.NavigationLayers = 2;       // air only
+navAgent.NavigationLayers = 1 | 2;   // both (bitwise OR)
 ```
 
 > Set `navigation_layers` on both the **NavigationRegion** and the **NavigationAgent** so they match. Mismatched layers are one of the most common reasons an agent finds no path.
@@ -325,6 +345,67 @@ func _physics_process(_delta: float) -> void:
 	move_and_slide()
 ```
 
+### C#
+
+```csharp
+using Godot;
+
+public partial class SteeringEnemy : CharacterBody2D
+{
+    [Export] public float Speed { get; set; } = 120f;
+    [Export] public float ArriveRadius { get; set; } = 80f;
+    [Export] public float ArriveStop { get; set; } = 8f;
+    [Export] public float WanderAngleChange { get; set; } = 0.4f;
+
+    private float _wanderAngle;
+
+    // ── Seek ──────────────────────────────────────────────────────────────
+    public Vector2 Seek(Vector2 targetPos)
+        => (targetPos - GlobalPosition).Normalized() * Speed;
+
+    // ── Flee ──────────────────────────────────────────────────────────────
+    public Vector2 Flee(Vector2 targetPos)
+        => (GlobalPosition - targetPos).Normalized() * Speed;
+
+    // ── Arrive ────────────────────────────────────────────────────────────
+    public Vector2 Arrive(Vector2 targetPos)
+    {
+        Vector2 toTarget = targetPos - GlobalPosition;
+        float dist = toTarget.Length();
+        if (dist < ArriveStop) return Vector2.Zero;
+        float rampedSpeed = Speed * (dist / ArriveRadius);
+        float clampedSpeed = Mathf.Min(rampedSpeed, Speed);
+        return toTarget.Normalized() * clampedSpeed;
+    }
+
+    // ── Wander ────────────────────────────────────────────────────────────
+    public Vector2 Wander()
+    {
+        float circleDistance = 60f;
+        float circleRadius = 30f;
+        _wanderAngle += GD.RandRange(-WanderAngleChange, WanderAngleChange);
+        Vector2 circleCenter = Velocity.Normalized() * circleDistance;
+        if (circleCenter == Vector2.Zero)
+            circleCenter = Vector2.Right * circleDistance;
+        var displacement = new Vector2(
+            Mathf.Cos(_wanderAngle) * circleRadius,
+            Mathf.Sin(_wanderAngle) * circleRadius
+        );
+        return (circleCenter + displacement).Normalized() * Speed;
+    }
+
+    // ── Usage example ─────────────────────────────────────────────────────
+    public override void _PhysicsProcess(double delta)
+    {
+        var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
+        Velocity = Arrive(player.GlobalPosition);
+        // Velocity = Flee(...);
+        // Velocity = Wander();
+        MoveAndSlide();
+    }
+}
+```
+
 ---
 
 ## 5. Patrol Patterns
@@ -515,6 +596,77 @@ func tick(actor: Node, delta: float) -> Status:
 	return _action.call(actor, delta) as Status
 ```
 
+### Lightweight C# Implementation
+
+```csharp
+// BTNode.cs — base class
+public abstract class BTNode
+{
+    public enum Status { Success, Failure, Running }
+
+    public virtual Status Tick(Node actor, float delta) => Status.Failure;
+}
+```
+
+```csharp
+// BTSequence.cs — run children in order; fail fast
+using Godot;
+using System.Collections.Generic;
+
+public class BTSequence : BTNode
+{
+    public List<BTNode> Children { get; set; } = new();
+
+    public override Status Tick(Node actor, float delta)
+    {
+        foreach (var child in Children)
+        {
+            var result = child.Tick(actor, delta);
+            if (result != Status.Success)
+                return result; // Failure or Running stops the sequence
+        }
+        return Status.Success;
+    }
+}
+```
+
+```csharp
+// BTSelector.cs — try children in order; succeed on first success
+using Godot;
+using System.Collections.Generic;
+
+public class BTSelector : BTNode
+{
+    public List<BTNode> Children { get; set; } = new();
+
+    public override Status Tick(Node actor, float delta)
+    {
+        foreach (var child in Children)
+        {
+            var result = child.Tick(actor, delta);
+            if (result != Status.Failure)
+                return result; // Success or Running stops the selector
+        }
+        return Status.Failure;
+    }
+}
+```
+
+```csharp
+// BTAction.cs — leaf node backed by a delegate
+using Godot;
+using System;
+
+public class BTAction : BTNode
+{
+    private readonly Func<Node, float, Status> _action;
+
+    public BTAction(Func<Node, float, Status> action) => _action = action;
+
+    public override Status Tick(Node actor, float delta) => _action(actor, delta);
+}
+```
+
 ### Wiring a BT in an Enemy
 
 ```gdscript
@@ -561,6 +713,56 @@ func _patrol(_actor: Node, _delta: float) -> BTNode.Status:
 	# minimal inline patrol; replace with full patrol logic
 	velocity = Vector2.RIGHT * 60.0
 	return BTNode.Status.RUNNING
+```
+
+### C#
+
+```csharp
+using Godot;
+
+public partial class BTEnemy : CharacterBody2D
+{
+    private BTNode _btRoot;
+
+    public override void _Ready()
+    {
+        var chaseSeq = new BTSequence
+        {
+            Children = { new BTAction(CanSeePlayer), new BTAction(ChasePlayer) }
+        };
+        var patrolAct = new BTAction(Patrol);
+        _btRoot = new BTSelector { Children = { chaseSeq, patrolAct } };
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        _btRoot.Tick(this, (float)delta);
+        MoveAndSlide();
+    }
+
+    private BTNode.Status CanSeePlayer(Node actor, float delta)
+    {
+        var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
+        if (!IsInstanceValid(player)) return BTNode.Status.Failure;
+        return GlobalPosition.DistanceTo(player.GlobalPosition) < 300f
+            ? BTNode.Status.Success
+            : BTNode.Status.Failure;
+    }
+
+    private BTNode.Status ChasePlayer(Node actor, float delta)
+    {
+        var player = GetTree().GetFirstNodeInGroup("player") as Node2D;
+        Velocity = (player.GlobalPosition - GlobalPosition).Normalized() * 120f;
+        return BTNode.Status.Running;
+    }
+
+    private BTNode.Status Patrol(Node actor, float delta)
+    {
+        // Minimal inline patrol; replace with full patrol logic
+        Velocity = Vector2.Right * 60f;
+        return BTNode.Status.Running;
+    }
+}
 ```
 
 ---
@@ -696,6 +898,143 @@ func _go_to_patrol_point() -> void:
 func _perform_attack() -> void:
 	# Replace with your attack logic (animation, hitbox, etc.)
 	pass
+```
+
+### C#
+
+```csharp
+using Godot;
+using Godot.Collections;
+
+public partial class ChaseAttackEnemy : CharacterBody2D
+{
+    private enum State { Patrol, Chase, Attack }
+
+    [Export] public float DetectRange { get; set; } = 250f;
+    [Export] public float AttackRange { get; set; } = 40f;
+    [Export] public float EscapeRange { get; set; } = 320f;
+    [Export] public float Speed { get; set; } = 110f;
+    [Export] public float AttackCooldown { get; set; } = 0.8f;
+    [Export] public Array<Marker2D> PatrolWaypoints { get; set; } = new();
+
+    private NavigationAgent2D _navAgent;
+    private Timer _attackTimer;
+    private Timer _patrolWaitTimer;
+    private State _state = State.Patrol;
+    private int _patrolIndex;
+    private bool _patrolWaiting;
+    private Node2D _player;
+
+    public override void _Ready()
+    {
+        _navAgent = GetNode<NavigationAgent2D>("NavigationAgent2D");
+        _attackTimer = GetNode<Timer>("AttackTimer");
+        _patrolWaitTimer = GetNode<Timer>("PatrolWaitTimer");
+
+        _attackTimer.WaitTime = AttackCooldown;
+        _attackTimer.OneShot = true;
+        _patrolWaitTimer.WaitTime = 1.0;
+        _patrolWaitTimer.OneShot = true;
+        _patrolWaitTimer.Timeout += AdvancePatrol;
+        _navAgent.VelocityComputed += OnVelocityComputed;
+
+        _player = GetTree().GetFirstNodeInGroup("player") as Node2D;
+        GoToPatrolPoint();
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        if (!IsInstanceValid(_player)) return;
+
+        float dist = GlobalPosition.DistanceTo(_player.GlobalPosition);
+
+        switch (_state)
+        {
+            case State.Patrol:
+                DoPatrol();
+                if (dist <= DetectRange) EnterChase();
+                break;
+
+            case State.Chase:
+                _navAgent.TargetPosition = _player.GlobalPosition;
+                if (dist <= AttackRange)
+                    EnterAttack();
+                else if (dist >= EscapeRange)
+                    EnterPatrol();
+                else
+                {
+                    Vector2 next = _navAgent.GetNextPathPosition();
+                    _navAgent.Velocity = (next - GlobalPosition).Normalized() * Speed;
+                }
+                break;
+
+            case State.Attack:
+                Velocity = Vector2.Zero;
+                if (dist > AttackRange) EnterChase();
+                break;
+        }
+
+        MoveAndSlide();
+    }
+
+    private void OnVelocityComputed(Vector2 safeVel) => Velocity = safeVel;
+
+    // ── State transitions ─────────────────────────────────────────────────
+    private void EnterChase() => _state = State.Chase;
+
+    private void EnterAttack()
+    {
+        _state = State.Attack;
+        if (_attackTimer.IsStopped())
+        {
+            PerformAttack();
+            _attackTimer.Start();
+        }
+    }
+
+    private void EnterPatrol()
+    {
+        _state = State.Patrol;
+        GoToPatrolPoint();
+    }
+
+    // ── Patrol helpers ────────────────────────────────────────────────────
+    private void DoPatrol()
+    {
+        if (PatrolWaypoints.Count == 0 || _patrolWaiting)
+        {
+            Velocity = Vector2.Zero;
+            return;
+        }
+        if (_navAgent.IsNavigationFinished())
+        {
+            _patrolWaiting = true;
+            _patrolWaitTimer.Start();
+            return;
+        }
+        Vector2 next = _navAgent.GetNextPathPosition();
+        _navAgent.Velocity = (next - GlobalPosition).Normalized() * (Speed * 0.5f);
+    }
+
+    private void AdvancePatrol()
+    {
+        _patrolWaiting = false;
+        _patrolIndex = (_patrolIndex + 1) % PatrolWaypoints.Count;
+        GoToPatrolPoint();
+    }
+
+    private void GoToPatrolPoint()
+    {
+        if (PatrolWaypoints.Count == 0) return;
+        _navAgent.TargetPosition = PatrolWaypoints[_patrolIndex].GlobalPosition;
+    }
+
+    // ── Attack ────────────────────────────────────────────────────────────
+    private void PerformAttack()
+    {
+        // Replace with your attack logic (animation, hitbox, etc.)
+    }
+}
 ```
 
 > For larger projects, extract each state into its own node class using the **state-machine** skill and inject the `NavigationAgent2D` reference from the parent.

@@ -7,6 +7,8 @@ description: Use when writing tests for Godot projects — TDD workflow with GUT
 
 This skill covers test-driven development (TDD) for Godot 4.3+ projects using GUT (Godot Unit Testing) and gdUnit4. It includes framework selection, full RED-GREEN-REFACTOR examples, test structure, running tests in CI, and common testing patterns.
 
+> **Related skills:** **godot-code-review** for review checklists, **dependency-injection** for test-friendly architecture, **export-pipeline** for CI/CD test automation.
+
 ## Framework Selection
 
 | Feature               | GUT                              | gdUnit4                           |

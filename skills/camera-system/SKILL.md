@@ -7,6 +7,8 @@ description: Use when implementing cameras — smooth follow, screen shake, came
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, then C#.
 
+> **Related skills:** **player-controller** for first-person camera setup, **state-machine** for camera state transitions, **godot-optimization** for camera culling and performance.
+
 ---
 
 ## 1. Camera2D Basics

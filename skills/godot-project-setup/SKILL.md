@@ -7,6 +7,8 @@ description: Use when creating a new Godot 4.x project — scaffolds recommended
 
 This skill scaffolds a new Godot 4.3+ project with recommended directory structure, project settings, autoloads, and version control configuration.
 
+> **Related skills:** **scene-organization** for structuring scene trees, **event-bus** for the EventBus autoload pattern, **save-load** for the SaveManager autoload pattern.
+
 ## Recommended Directory Structure (Split Layout)
 
 The split layout separates assets, scenes, and scripts into distinct top-level directories. This scales well for medium-to-large projects and makes it easy to find resources by type.
@@ -243,6 +245,37 @@ func load_bindings() -> void:
         InputMap.action_erase_events(action)
         for event in config.get_value("bindings", action):
             InputMap.action_add_event(action, event)
+```
+
+**Saving and restoring custom bindings at runtime (C#):**
+
+```csharp
+public void SaveBindings()
+{
+    var config = new ConfigFile();
+    foreach (StringName action in InputMap.GetActions())
+    {
+        if (((string)action).StartsWith("ui_"))
+            continue; // skip built-in UI actions
+        var events = InputMap.ActionGetEvents(action);
+        config.SetValue("bindings", action, events);
+    }
+    config.Save("user://bindings.cfg");
+}
+
+public void LoadBindings()
+{
+    var config = new ConfigFile();
+    if (config.Load("user://bindings.cfg") != Error.Ok)
+        return;
+    foreach (string action in config.GetSectionKeys("bindings"))
+    {
+        InputMap.ActionEraseEvents(action);
+        var events = (Godot.Collections.Array)config.GetValue("bindings", action);
+        foreach (InputEvent @event in events)
+            InputMap.ActionAddEvent(action, @event);
+    }
+}
 ```
 
 ## Autoloads

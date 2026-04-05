@@ -7,6 +7,8 @@ description: Use when exporting and distributing Godot games — export presets,
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, C# follows where applicable.
 
+> **Related skills:** **godot-testing** for CI/CD test integration, **godot-optimization** for pre-export performance checks, **responsive-ui** for platform-specific resolution settings.
+
 ---
 
 ## 1. Export Presets

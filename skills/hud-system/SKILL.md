@@ -7,6 +7,8 @@ description: Use when building in-game HUDs — health bars, score displays, min
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, then C#.
 
+> **Related skills:** **godot-ui** for Control node layout and themes, **component-system** for HealthComponent integration, **event-bus** for score/notification signals, **inventory-system** for inventory UI patterns.
+
 ---
 
 ## 1. HUD Architecture
@@ -262,11 +264,21 @@ public partial class ScoreDisplay : Label
 signal score_changed(new_score: int)
 ```
 
+```csharp
+// EventBus.cs (partial — score signal)
+[Signal] public delegate void ScoreChangedEventHandler(int newScore);
+```
+
 Emit from wherever points are awarded:
 
 ```gdscript
 # Inside a collectible or enemy death handler
 EventBus.score_changed.emit(GameState.score)
+```
+
+```csharp
+// Inside a collectible or enemy death handler
+EventBus.Instance.EmitSignal(EventBus.SignalName.ScoreChanged, GameState.Score);
 ```
 
 ---
@@ -318,6 +330,48 @@ func _play_animation() -> void:
     tween.finished.connect(queue_free)
 ```
 
+### C# — DamageNumber scene (single instance)
+
+```csharp
+// DamageNumber.cs — attach to a Label; root of a small PackedScene
+using Godot;
+
+public partial class DamageNumber : Label
+{
+    [Export] public float RiseDistance { get; set; } = 40.0f;
+    [Export] public float Lifetime { get; set; } = 0.7f;
+    [Export] public Color CriticalColor { get; set; } = new(1.0f, 0.3f, 0.1f);
+    [Export] public Color NormalColor { get; set; } = new(1.0f, 1.0f, 1.0f);
+
+    public void ShowDamage(int amount, bool isCritical = false)
+    {
+        Text = isCritical ? $"!{amount}" : amount.ToString();
+        Modulate = new Color(Modulate, 1.0f);
+        AddThemeFontSizeOverride("font_size", isCritical ? 32 : 24);
+        Modulate = isCritical ? CriticalColor : NormalColor;
+        PlayAnimation();
+    }
+
+    private void PlayAnimation()
+    {
+        var tween = CreateTween();
+        tween.SetParallel(true);
+
+        // Rise upward
+        tween.TweenProperty(this, "position:y", Position.Y - RiseDistance, Lifetime)
+            .SetEase(Tween.EaseType.Out)
+            .SetTrans(Tween.TransitionType.Quad);
+
+        // Fade out (start fading at halfway point)
+        tween.TweenProperty(this, "modulate:a", 0.0f, Lifetime * 0.5f)
+            .SetDelay(Lifetime * 0.5f)
+            .SetEase(Tween.EaseType.In);
+
+        tween.Finished += QueueFree;
+    }
+}
+```
+
 ### GDScript — Spawner (attach to the HUD or a DamageNumbersLayer Node2D)
 
 ```gdscript
@@ -356,6 +410,49 @@ func spawn(world_position: Vector2, amount: int, is_critical: bool = false) -> v
     dn.show_damage(amount, is_critical)
 ```
 
+### C# — Spawner (attach to the HUD or a DamageNumbersLayer Node2D)
+
+```csharp
+// DamageNumberSpawner.cs
+using Godot;
+
+public partial class DamageNumberSpawner : Node
+{
+    [Export] public PackedScene DamageNumberScene { get; set; }
+
+    private const int PoolSize = 20;
+    private readonly DamageNumber[] _pool = new DamageNumber[PoolSize];
+    private int _poolIndex = 0;
+
+    public override void _Ready()
+    {
+        for (int i = 0; i < PoolSize; i++)
+        {
+            var dn = DamageNumberScene.Instantiate<DamageNumber>();
+            dn.Visible = false;
+            AddChild(dn);
+            _pool[i] = dn;
+        }
+    }
+
+    /// <summary>
+    /// Call from any node that receives damage events.
+    /// <paramref name="worldPosition"/> is the attacker or victim's global position.
+    /// </summary>
+    public void Spawn(Vector2 worldPosition, int amount, bool isCritical = false)
+    {
+        var screenPos = GetViewport().GetCanvasTransform() * worldPosition;
+
+        var dn = _pool[_poolIndex % PoolSize];
+        _poolIndex++;
+
+        dn.Position = screenPos;
+        dn.Visible = true;
+        dn.ShowDamage(amount, isCritical);
+    }
+}
+```
+
 **Connecting to a damage event (GDScript):**
 
 ```gdscript
@@ -363,6 +460,17 @@ func spawn(world_position: Vector2, amount: int, is_critical: bool = false) -> v
 EventBus.damage_dealt.connect(func(pos: Vector2, amount: int, crit: bool) -> void:
     $DamageNumbersLayer/DamageNumberSpawner.spawn(pos, amount, crit)
 )
+```
+
+**Connecting to a damage event (C#):**
+
+```csharp
+// In the HUD root or the DamageNumberSpawner's _Ready:
+EventBus.Instance.DamageDealt += (Vector2 pos, int amount, bool crit) =>
+{
+    GetNode<DamageNumberSpawner>("DamageNumbersLayer/DamageNumberSpawner")
+        .Spawn(pos, amount, crit);
+};
 ```
 
 **Pool notes:** The simple modular pool above recycles labels before they finish animating if POOL_SIZE is too small. Increase the pool size or skip pooling entirely for games with infrequent hits. A more robust pool tracks which instances are free using a `free_list` array.
@@ -519,6 +627,11 @@ ToastNotification (PanelContainer)
 signal notification_requested(message: String)
 ```
 
+```csharp
+// EventBus.cs (partial — notification signal)
+[Signal] public delegate void NotificationRequestedEventHandler(string message);
+```
+
 ---
 
 ## 6. Minimap Concept
@@ -561,6 +674,29 @@ func _process(delta: float) -> void:
     if not follow_target:
         return
     global_position = global_position.lerp(follow_target.global_position, follow_speed * delta)
+```
+
+### C# — MinimapCamera
+
+```csharp
+// MinimapCamera.cs — attach to the Camera2D inside the SubViewport
+using Godot;
+
+public partial class MinimapCamera : Camera2D
+{
+    /// <summary>The target node the minimap camera tracks (usually the player).</summary>
+    [Export] public Node2D FollowTarget { get; set; }
+
+    /// <summary>How tightly the minimap tracks the target (0 = no follow, 1 = instant snap).</summary>
+    [Export] public float FollowSpeed { get; set; } = 10.0f;
+
+    public override void _Process(double delta)
+    {
+        if (FollowTarget == null)
+            return;
+        GlobalPosition = GlobalPosition.Lerp(FollowTarget.GlobalPosition, FollowSpeed * (float)delta);
+    }
+}
 ```
 
 ### SubViewport Settings
@@ -644,6 +780,63 @@ func _get_key_label(action_name: String) -> String:
     return "[%s]" % action_name
 ```
 
+### C# — Screen-Space Prompt
+
+```csharp
+// InteractionPrompt.cs — attach to a Label or Control inside the HUD CanvasLayer
+using Godot;
+
+public partial class InteractionPrompt : Label
+{
+    /// <summary>Pixel offset above the interactable's screen position.</summary>
+    [Export] public Vector2 Offset { get; set; } = new(0.0f, -48.0f);
+
+    private Node2D _target;
+
+    public override void _Ready()
+    {
+        Hide();
+    }
+
+    /// <summary>Call when the player enters an interactable's Area2D.</summary>
+    public void ShowFor(Node2D target, string actionName = "interact")
+    {
+        _target = target;
+        string key = GetKeyLabel(actionName);
+        Text = $"Press {key} to interact";
+        Show();
+    }
+
+    /// <summary>Call when the player exits the Area2D.</summary>
+    public void HidePrompt()
+    {
+        _target = null;
+        Hide();
+    }
+
+    public override void _Process(double delta)
+    {
+        if (_target == null || !Visible)
+            return;
+        var screenPos = GetViewport().GetCanvasTransform() * _target.GlobalPosition;
+        GlobalPosition = screenPos + Offset;
+    }
+
+    private static string GetKeyLabel(string actionName)
+    {
+        var events = InputMap.ActionGetEvents(actionName);
+        foreach (var ev in events)
+        {
+            if (ev is InputEventKey key)
+                return key.AsTextPhysicalKeycode();
+            if (ev is InputEventJoypadButton btn)
+                return btn.AsText();
+        }
+        return $"[{actionName}]";
+    }
+}
+```
+
 ### Interactable Area2D (GDScript)
 
 ```gdscript
@@ -673,6 +866,43 @@ func _on_body_exited(body: Node2D) -> void:
 
 func _get_prompt() -> InteractionPrompt:
     return get_tree().get_first_node_in_group(PROMPT_GROUP) as InteractionPrompt
+```
+
+### Interactable Area2D (C#)
+
+```csharp
+// Interactable.cs — attach to an Area2D on the interactable object
+using Godot;
+
+public partial class Interactable : Area2D
+{
+    private const string PromptGroup = "interaction_prompt";
+
+    public override void _Ready()
+    {
+        BodyEntered += OnBodyEntered;
+        BodyExited += OnBodyExited;
+    }
+
+    private void OnBodyEntered(Node2D body)
+    {
+        if (!body.IsInGroup("player"))
+            return;
+        GetPrompt()?.ShowFor(this);
+    }
+
+    private void OnBodyExited(Node2D body)
+    {
+        if (!body.IsInGroup("player"))
+            return;
+        GetPrompt()?.HidePrompt();
+    }
+
+    private InteractionPrompt GetPrompt()
+    {
+        return GetTree().GetFirstNodeInGroup(PromptGroup) as InteractionPrompt;
+    }
+}
 ```
 
 **World-space alternative:** Instead of a HUD Label, add a `Label3D` (3D) or a `Label` with `top_level = true` (2D) directly to the interactable scene. This floats above the object in world space and is naturally occluded by camera zoom or rotation. The trade-off is that it requires a `CanvasItem` in the world tree rather than the HUD layer, and does not automatically stay in screen bounds.
