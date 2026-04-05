@@ -47,21 +47,21 @@ Skills use Claude Code tool names as the canonical reference. Non-Claude platfor
 - `ai-navigation` — NavigationAgent, behavior trees
 - `camera-system` — Camera follow, shake, zones
 
-### UI/UX *(Planned — Phase 3)*
+### UI/UX
 - `godot-ui` — Control nodes, themes, containers
 - `responsive-ui` — Multi-resolution scaling
 - `hud-system` — In-game HUD patterns
 
-### Multiplayer *(Planned — Phase 3)*
+### Multiplayer
 - `multiplayer-basics` — MultiplayerAPI, RPCs, authority
 - `multiplayer-sync` — Synchronization, interpolation
 - `dedicated-server` — Headless export, server architecture
 
-### Build & Deploy *(Planned — Phase 3)*
+### Build & Deploy
 - `export-pipeline` — Platform exports, CI/CD
 - `godot-optimization` — Profiler, performance patterns
 - `addon-development` — EditorPlugin, tool scripts
 
-### C# Specific *(Planned — Phase 3)*
+### C# Specific
 - `csharp-godot` — C# conventions, GodotSharp API
 - `csharp-signals` — C# signal patterns
