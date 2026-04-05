@@ -201,7 +201,7 @@ func _animate_counter(from: int, to: int) -> void:
     _tween.set_ease(Tween.EASE_OUT)
     _tween.set_trans(Tween.TRANS_QUAD)
     # Tween an intermediate float; update the label text each step.
-    _tween.tween_method(_set_counter_value.bind(), float(from), float(to), count_duration)
+    _tween.tween_method(_set_counter_value, float(from), float(to), count_duration)
 
 
 func _set_counter_value(value: float) -> void:

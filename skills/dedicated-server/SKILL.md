@@ -7,6 +7,8 @@ description: Use when building dedicated servers — headless export, server arc
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, C# follows.
 
+**Related skills:** See **multiplayer-basics** for ENet setup, RPCs, and authority model. See **multiplayer-sync** for state synchronization and interpolation.
+
 ---
 
 ## 1. Headless Export
@@ -263,7 +265,7 @@ func _on_peer_connected(peer_id: int) -> void:
     _sync_lobby_state.rpc_id(peer_id, player_list)
     # Notify everyone else.
     _notify_player_joined.rpc(peer_id, player_list[peer_id]["username"])
-    emit_signal("player_joined", peer_id)
+    player_joined.emit(peer_id)
 
 
 func _on_peer_disconnected(peer_id: int) -> void:
@@ -273,7 +275,7 @@ func _on_peer_disconnected(peer_id: int) -> void:
     player_list.erase(peer_id)
     _notify_player_left.rpc(peer_id, username)
     print("[Lobby] Peer %d left (%d/%d)" % [peer_id, player_list.size(), max_players])
-    emit_signal("player_left", peer_id)
+    player_left.emit(peer_id)
 
 
 # ── Ready state ───────────────────────────────────────────────────────────────
@@ -296,7 +298,7 @@ func _check_all_ready() -> void:
         if not data["ready"]:
             return
     print("[Lobby] All players ready — starting game")
-    emit_signal("all_players_ready")
+    all_players_ready.emit()
     _start_game.rpc()
 
 

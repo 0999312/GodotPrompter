@@ -7,6 +7,8 @@ description: Use when implementing multiplayer — MultiplayerAPI, ENet/WebSocke
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, C# follows.
 
+**Related skills:** See **multiplayer-sync** for state synchronization and interpolation. See **dedicated-server** for headless export and server deployment.
+
 ---
 
 ## 1. Multiplayer Architecture

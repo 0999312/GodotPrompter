@@ -5,7 +5,7 @@ description: Use when implementing signals in C# — [Signal] delegates, EmitSig
 
 # Signals in C# (Godot 4.x)
 
-This skill is **C# only**. Godot signals in C# require a different mental model from GDScript: delegates declared with `[Signal]`, strongly-typed `+=`/`-=` connections, and mandatory disconnection in `_ExitTree()`. All examples target Godot 4.x with no deprecated APIs.
+This skill is **C# only**. For general C# conventions and project setup, see the **csharp-godot** skill. Godot signals in C# require a different mental model from GDScript: delegates declared with `[Signal]`, strongly-typed `+=`/`-=` connections, and mandatory disconnection in `_ExitTree()`. All examples target Godot 4.x with no deprecated APIs.
 
 ---
 
@@ -135,16 +135,21 @@ Use lambdas for one-off, short-lived responses. Store the lambda in a field if y
 _player.Died += () => GetNode<AudioStreamPlayer>("DeathSound").Play();
 
 // Stored lambda — can be disconnected.
-private Action _onItemCollected;
+private Action<string> _onItemCollected;
 
 public override void _Ready()
 {
-    _onItemCollected = () =>
+    _onItemCollected = (itemName) =>
     {
         _collectCount++;
         UpdateCollectDisplay();
     };
     _player.ItemCollected += _onItemCollected;
+}
+
+public override void _ExitTree()
+{
+    _player.ItemCollected -= _onItemCollected;
 }
 ```
 

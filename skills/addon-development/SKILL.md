@@ -415,10 +415,10 @@ var _preview_gen: EditorResourcePreviewGenerator
 
 func _enter_tree() -> void:
     _preview_gen = preload("res://addons/my_plugin/my_preview_generator.gd").new()
-    get_editor_interface().get_resource_previewer().add_preview_generator(_preview_gen)
+    EditorInterface.get_resource_previewer().add_preview_generator(_preview_gen)
 
 func _exit_tree() -> void:
-    get_editor_interface().get_resource_previewer().remove_preview_generator(_preview_gen)
+    EditorInterface.get_resource_previewer().remove_preview_generator(_preview_gen)
 ```
 
 ---
@@ -631,7 +631,7 @@ script="plugin.gd"
 - [ ] `_parse_property` returns `true` only for properties that need a custom editor
 - [ ] Dock scenes have a `Custom Minimum Size` set so the panel is usable at default dock widths
 - [ ] Dock `Control` is freed with `queue_free()` in `_exit_tree()`
-- [ ] `EditorResourcePreviewGenerator` is both added and removed via `get_editor_interface().get_resource_previewer()`
+- [ ] `EditorResourcePreviewGenerator` is both added and removed via `EditorInterface.get_resource_previewer()`
 - [ ] Gizmo plugin implements `_commit_handle` with `get_undo_redo()` so handle drags are undoable
 - [ ] Plugin tested by full disable/enable cycle after each structural change
 - [ ] `push_error()` used instead of silent failures in all `_enter_tree` setup paths

@@ -160,7 +160,7 @@ func _process(_delta: float) -> void:
 
 ### LOD for 3D
 
-Use `VisibilityNotifier3D` distance thresholds or Godot's built-in LOD system to swap high-poly meshes for low-poly equivalents at range.
+Use `VisibleOnScreenNotifier3D` distance thresholds or Godot's built-in LOD system to swap high-poly meshes for low-poly equivalents at range.
 
 ```gdscript
 # Manually swap mesh at distance

@@ -7,6 +7,8 @@ description: Use when synchronizing multiplayer state — MultiplayerSynchronize
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, then C#.
 
+**Related skills:** See **multiplayer-basics** for ENet setup, RPCs, and authority model. See **dedicated-server** for headless export and deployment.
+
 ---
 
 ## 1. MultiplayerSynchronizer
@@ -484,9 +486,9 @@ func update_sync_intervals(local_player: Node2D) -> void:
 | Data Type | Channel | Why |
 |---|---|---|
 | Position, velocity | `unreliable` | Timeliness matters; a dropped packet will be superseded by the next one |
-| Health, score, kills | `reliable_ordered` | Must arrive and in order; gaps cause incorrect state |
-| Spawn / despawn events | `reliable_ordered` | One-time events that must not be missed |
-| Chat messages | `reliable_ordered` | Ordering and delivery matter to the user |
+| Health, score, kills | `reliable` | Must arrive and in order; gaps cause incorrect state |
+| Spawn / despawn events | `reliable` | One-time events that must not be missed |
+| Chat messages | `reliable` | Ordering and delivery matter to the user |
 
 In Godot, set the channel per `@rpc` annotation:
 
