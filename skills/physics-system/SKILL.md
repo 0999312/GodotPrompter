@@ -7,7 +7,7 @@ description: Use when working with physics bodies, collision shapes, raycasting,
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, then C#.
 
-> **Related skills:** **player-controller** for CharacterBody2D/3D movement patterns, **component-system** for hitbox/hurtbox composition, **godot-optimization** for physics performance tuning, **camera-system** for camera follow and interpolation, **multiplayer-sync** for networked physics.
+> **Related skills:** **player-controller** for CharacterBody2D/3D movement patterns, **component-system** for hitbox/hurtbox composition, **godot-optimization** for physics performance tuning, **camera-system** for camera follow and interpolation, **multiplayer-sync** for networked physics, **2d-essentials** for tile collision setup and 2D canvas layers.
 
 ---
 

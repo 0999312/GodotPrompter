@@ -7,7 +7,7 @@ description: Use when implementing shaders — Godot shader language, visual sha
 
 All examples target Godot 4.3+ with no deprecated APIs.
 
-> **Related skills:** **animation-system** for shader-driven effects like hit flash, **godot-optimization** for shader performance considerations, **camera-system** for post-processing camera effects.
+> **Related skills:** **animation-system** for shader-driven effects like hit flash, **godot-optimization** for shader performance considerations, **camera-system** for post-processing camera effects, **2d-essentials** for 2D lighting, pixel-art shaders, and CanvasTexture normal maps.
 
 ---
 

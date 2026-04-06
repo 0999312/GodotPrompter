@@ -7,7 +7,7 @@ description: Use when implementing player movement — CharacterBody2D/3D patter
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, then C#.
 
-> **Related skills:** **physics-system** for RigidBody, Area, raycasting, and collision shapes, **state-machine** for movement state management, **camera-system** for camera follow and shake, **component-system** for hitbox/hurtbox integration.
+> **Related skills:** **physics-system** for RigidBody, Area, raycasting, and collision shapes, **2d-essentials** for TileMaps, parallax, and 2D lighting, **state-machine** for movement state management, **camera-system** for camera follow and shake, **component-system** for hitbox/hurtbox integration.
 
 ---
 
