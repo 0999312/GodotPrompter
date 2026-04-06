@@ -7,7 +7,7 @@ description: Use when synchronizing multiplayer state — MultiplayerSynchronize
 
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, then C#.
 
-**Related skills:** See **multiplayer-basics** for ENet setup, RPCs, and authority model. See **dedicated-server** for headless export and deployment.
+**Related skills:** See **multiplayer-basics** for ENet setup, RPCs, and authority model. See **dedicated-server** for headless export and deployment. See **physics-system** for physics interpolation and RigidBody synchronization.
 
 ---
 
