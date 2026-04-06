@@ -4,6 +4,24 @@ All notable changes to GodotPrompter will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.2.0] - 2026-04-07
+
+### Added
+
+- **physics-system** skill — RigidBody2D/3D, StaticBody, Area2D/3D, raycasting, collision shapes/layers, Jolt physics, physics interpolation, ragdolls, SoftBody3D, and troubleshooting
+- **2d-essentials** skill — TileMaps, parallax scrolling, 2D lights and shadows, 2D particles, custom drawing, 2D meshes, antialiasing, and pixel-perfect snapping
+- Superpowers plugin attribution in README
+- Author and support section in README
+- Bidirectional cross-references across all related skills
+
+### In Progress
+
+New skills planned (4 remaining):
+- `3d-essentials` — materials, lighting, environment, fog, LOD, occlusion, GI
+- `input-system` — InputEvent flow, action mapping, gamepad/controller support
+- `particles-vfx` — GPUParticles2D/3D, process materials, subemitters, trails
+- `tween-animation` — Tween class, easing, chaining, property/method tweens
+
 ## [1.1.0] - 2026-04-06
 
 ### Added

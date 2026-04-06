@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Godot 4.x](https://img.shields.io/badge/Godot-4.3+-blue.svg)](https://godotengine.org)
-[![Skills: 32](https://img.shields.io/badge/Skills-32-green.svg)](#available-skills)
+[![Skills: 34](https://img.shields.io/badge/Skills-34-green.svg)](#available-skills)
 
 Agentic skills framework for Godot 4.x game development. Gives AI coding agents domain-specific expertise for GDScript and C# projects.
 
@@ -12,7 +12,7 @@ Inspired by and built on top of the [Superpowers](https://github.com/obra/superp
 
 GodotPrompter is a plugin that provides **skills** — structured domain knowledge that AI agents load on demand. When you ask your agent to "add a state machine" or "set up multiplayer", it loads the relevant GodotPrompter skill and follows Godot-specific best practices instead of relying on generic knowledge.
 
-**32 skills** covering project setup, architecture, gameplay systems, animation, shaders, audio, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
+**34 skills** covering project setup, architecture, gameplay systems, physics, 2D/3D systems, animation, shaders, audio, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
 
 ## Quick Start
 
@@ -147,6 +147,13 @@ GodotPrompter includes 3 specialized agents:
 | `component-system` | Hitbox/Hurtbox/Health components, composition over inheritance |
 | `resource-pattern` | Custom Resources for items, stats, config, editor integration |
 | `dependency-injection` | Autoloads, service locators, @export injection, scene injection |
+
+### Physics & 2D/3D (2 skills)
+
+| Skill | Description |
+|-------|-------------|
+| `physics-system` | RigidBody, Area, raycasting, collision shapes, Jolt, ragdolls, interpolation |
+| `2d-essentials` | TileMaps, parallax, 2D lights/shadows, particles, custom drawing, canvas layers |
 
 ### Gameplay Systems (8 skills)
 
