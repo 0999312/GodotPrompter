@@ -72,6 +72,7 @@ Skills use Claude Code tool names as the canonical reference. Non-Claude platfor
 
 ### Gameplay Systems
 - `player-controller` — CharacterBody2D/3D movement, input handling
+- `input-handling` — InputEvent system, Input Map, controllers/gamepads, mouse/touch, rebinding
 - `animation-system` — AnimationPlayer, AnimationTree, blend trees, state machines
 - `inventory-system` — Resource-based inventory patterns
 - `dialogue-system` — Dialogue trees and patterns

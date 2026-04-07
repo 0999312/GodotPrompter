@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Godot 4.x](https://img.shields.io/badge/Godot-4.3+-blue.svg)](https://godotengine.org)
-[![Skills: 34](https://img.shields.io/badge/Skills-34-green.svg)](#available-skills)
+[![Skills: 34](https://img.shields.io/badge/Skills-35-green.svg)](#available-skills)
 
 Agentic skills framework for Godot 4.x game development. Gives AI coding agents domain-specific expertise for GDScript and C# projects.
 
@@ -12,7 +12,7 @@ Inspired by and built on top of the [Superpowers](https://github.com/obra/superp
 
 GodotPrompter is a plugin that provides **skills** — structured domain knowledge that AI agents load on demand. When you ask your agent to "add a state machine" or "set up multiplayer", it loads the relevant GodotPrompter skill and follows Godot-specific best practices instead of relying on generic knowledge.
 
-**34 skills** covering project setup, architecture, gameplay systems, physics, 2D/3D systems, animation, shaders, audio, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
+**35 skills** covering project setup, architecture, gameplay systems, input handling, physics, 2D/3D systems, animation, shaders, audio, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
 
 ## Quick Start
 
@@ -155,11 +155,12 @@ GodotPrompter includes 3 specialized agents:
 | `physics-system` | RigidBody, Area, raycasting, collision shapes, Jolt, ragdolls, interpolation |
 | `2d-essentials` | TileMaps, parallax, 2D lights/shadows, particles, custom drawing, canvas layers |
 
-### Gameplay Systems (8 skills)
+### Gameplay Systems (9 skills)
 
 | Skill | Description |
 |-------|-------------|
 | `player-controller` | CharacterBody2D/3D movement — top-down, platformer, first-person |
+| `input-handling` | InputEvent system, Input Map actions, controllers/gamepads, mouse/touch, action rebinding |
 | `animation-system` | AnimationPlayer, AnimationTree, blend trees, state machines, sprite animation |
 | `audio-system` | Audio buses, music management, SFX pooling, spatial audio, dynamic mixing |
 | `inventory-system` | Resource-based items, slot management, stacking, UI binding |
