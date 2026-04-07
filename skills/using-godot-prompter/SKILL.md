@@ -92,6 +92,7 @@ Skills use Claude Code tool names as the canonical reference. Non-Claude platfor
 - `dedicated-server` — Headless export, server architecture
 
 ### Rendering & Visual
+- `3d-essentials` — Materials, lighting, shadows, environment, GI, fog, LOD, occlusion, decals
 - `shader-basics` — Godot shader language, visual shaders, common recipes, post-processing
 
 ### Build & Deploy

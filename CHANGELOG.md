@@ -11,14 +11,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **physics-system** skill — RigidBody2D/3D, StaticBody, Area2D/3D, raycasting, collision shapes/layers, Jolt physics, physics interpolation, ragdolls, SoftBody3D, and troubleshooting
 - **2d-essentials** skill — TileMaps, parallax scrolling, 2D lights and shadows, 2D particles, custom drawing, 2D meshes, antialiasing, and pixel-perfect snapping
 - **input-handling** skill — InputEvent system, Input Map actions, controllers/gamepads, mouse/touch, action rebinding, input architecture
+- **3d-essentials** skill — materials, lighting, shadows, environment, global illumination, fog, LOD, occlusion culling, decals, MultiMesh, renderer comparison
 - Superpowers plugin attribution in README
 - Author and support section in README
 - Bidirectional cross-references across all related skills
 
 ### In Progress
 
-New skills planned (3 remaining):
-- `3d-essentials` — materials, lighting, environment, fog, LOD, occlusion, GI
+New skills planned (2 remaining):
 - `particles-vfx` — GPUParticles2D/3D, process materials, subemitters, trails
 - `tween-animation` — Tween class, easing, chaining, property/method tweens
 
