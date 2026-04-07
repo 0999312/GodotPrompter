@@ -22,22 +22,23 @@ Engine converts to InputEvent
     ↓
 _input()              ← raw input, runs first
     ↓
-UI Control nodes      ← buttons, sliders consume events
-    ↓
 _shortcut_input()     ← for global shortcuts
     ↓
-_unhandled_input()    ← game input (movement, actions)
+UI Control nodes      ← buttons, sliders consume events
     ↓
 _unhandled_key_input() ← unhandled key-only events
+    ↓
+_unhandled_input()    ← game input (movement, actions)
 ```
 
 ### Where to Handle Input
 
-| Method                    | Use For                                    | Consumed by UI? |
-|---------------------------|--------------------------------------------|-----------------|
-| `_input()`                | Camera look, global hotkeys                | No — runs before UI |
-| `_unhandled_input()`      | Gameplay actions (jump, attack, interact)  | Yes — UI eats it first |
+| Method                    | Use For                                    | When It Runs     |
+|---------------------------|--------------------------------------------|------------------|
+| `_input()`                | Camera look, global hotkeys                | First — before everything |
 | `_shortcut_input()`       | Global shortcuts (pause, screenshot)       | After `_input`, before UI |
+| `_unhandled_key_input()`  | Key-only events that UI didn't consume     | After UI, keys only |
+| `_unhandled_input()`      | Gameplay actions (jump, attack, interact)  | Last — after UI consumes |
 | `Input.is_action_pressed()` in `_physics_process()` | Continuous movement | N/A — polling, not event-driven |
 
 **Rule of thumb:** Use `_unhandled_input()` for discrete game actions (jump, attack). Use `Input` polling in `_physics_process()` for continuous movement. Use `_input()` only when you need input before UI consumes it (e.g., mouse look).
@@ -229,6 +230,39 @@ func _physics_process(delta: float) -> void:
         _jump_buffered = false
 ```
 
+```csharp
+private bool _jumpBuffered;
+private float _jumpBufferTimer;
+private const float JumpBufferTime = 0.1f;
+
+public override void _UnhandledInput(InputEvent @event)
+{
+    if (@event.IsActionPressed("jump"))
+    {
+        _jumpBuffered = true;
+        _jumpBufferTimer = JumpBufferTime;
+    }
+}
+
+public override void _PhysicsProcess(double delta)
+{
+    if (_jumpBuffered)
+    {
+        _jumpBufferTimer -= (float)delta;
+        if (_jumpBufferTimer <= 0f)
+            _jumpBuffered = false;
+    }
+
+    if (_jumpBuffered && IsOnFloor())
+    {
+        Vector2 vel = Velocity;
+        vel.Y = JumpVelocity;
+        Velocity = vel;
+        _jumpBuffered = false;
+    }
+}
+```
+
 ---
 
 ## 4. Mouse Input
@@ -299,6 +333,18 @@ func _unhandled_input(event: InputEvent) -> void:
             Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 ```
 
+```csharp
+public override void _UnhandledInput(InputEvent @event)
+{
+    if (@event.IsActionPressed("ui_cancel"))
+    {
+        Input.MouseMode = Input.MouseMode == Input.MouseModeEnum.Captured
+            ? Input.MouseModeEnum.Visible
+            : Input.MouseModeEnum.Captured;
+    }
+}
+```
+
 ### Mouse Button Events
 
 ```gdscript
@@ -317,6 +363,30 @@ func _unhandled_input(event: InputEvent) -> void:
                 _next_weapon()
             MOUSE_BUTTON_WHEEL_DOWN:
                 _prev_weapon()
+```
+
+```csharp
+public override void _UnhandledInput(InputEvent @event)
+{
+    if (@event is InputEventMouseButton mouse)
+    {
+        switch (mouse.ButtonIndex)
+        {
+            case MouseButton.Left when mouse.Pressed:
+                Attack();
+                break;
+            case MouseButton.Right:
+                if (mouse.Pressed) AimStart(); else AimEnd();
+                break;
+            case MouseButton.WheelUp:
+                NextWeapon();
+                break;
+            case MouseButton.WheelDown:
+                PrevWeapon();
+                break;
+        }
+    }
+}
 ```
 
 ### Custom Mouse Cursor
@@ -661,6 +731,52 @@ func load_bindings() -> void:
             var event: InputEvent = str_to_var(entry["data"])
             if event:
                 InputMap.action_add_event(action, event)
+```
+
+```csharp
+public void SaveBindings()
+{
+    var config = new ConfigFile();
+    foreach (StringName action in InputMap.GetActions())
+    {
+        if (((string)action).StartsWith("ui_"))
+            continue;
+        var events = InputMap.ActionGetEvents(action);
+        var eventData = new Godot.Collections.Array();
+        foreach (var ev in events)
+        {
+            var dict = new Godot.Collections.Dictionary
+            {
+                { "type", ev.GetClass() },
+                { "data", GD.VarToStr(ev) }
+            };
+            eventData.Add(dict);
+        }
+        config.SetValue("input", action, eventData);
+    }
+    config.Save("user://input_bindings.cfg");
+}
+
+public void LoadBindings()
+{
+    var config = new ConfigFile();
+    if (config.Load("user://input_bindings.cfg") != Error.Ok)
+        return;
+    foreach (string action in config.GetSectionKeys("input"))
+    {
+        if (!InputMap.HasAction(action))
+            continue;
+        InputMap.ActionEraseEvents(action);
+        var eventData = (Godot.Collections.Array)config.GetValue("input", action, new Godot.Collections.Array());
+        foreach (var entry in eventData)
+        {
+            var dict = (Godot.Collections.Dictionary)entry;
+            var ev = GD.StrToVar((string)dict["data"]).As<InputEvent>();
+            if (ev != null)
+                InputMap.ActionAddEvent(action, ev);
+        }
+    }
+}
 ```
 
 ---
