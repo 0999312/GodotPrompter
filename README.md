@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Godot 4.x](https://img.shields.io/badge/Godot-4.3+-blue.svg)](https://godotengine.org)
-[![Skills: 35](https://img.shields.io/badge/Skills-36-green.svg)](#available-skills)
+[![Skills: 35](https://img.shields.io/badge/Skills-37-green.svg)](#available-skills)
 
 Agentic skills framework for Godot 4.x game development. Gives AI coding agents domain-specific expertise for GDScript and C# projects.
 
@@ -12,7 +12,7 @@ Inspired by and built on top of the [Superpowers](https://github.com/obra/superp
 
 GodotPrompter is a plugin that provides **skills** — structured domain knowledge that AI agents load on demand. When you ask your agent to "add a state machine" or "set up multiplayer", it loads the relevant GodotPrompter skill and follows Godot-specific best practices instead of relying on generic knowledge.
 
-**36 skills** covering project setup, architecture, gameplay systems, input handling, physics, 2D/3D systems, animation, shaders, audio, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
+**37 skills** covering project setup, architecture, gameplay systems, input handling, physics, 2D/3D systems, animation, shaders, audio, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
 
 ## Quick Start
 
@@ -156,13 +156,14 @@ GodotPrompter includes 3 specialized agents:
 | `2d-essentials` | TileMaps, parallax, 2D lights/shadows, particles, custom drawing, canvas layers |
 | `3d-essentials` | Materials, lighting, shadows, environment, GI, fog, LOD, occlusion, decals |
 
-### Gameplay Systems (9 skills)
+### Gameplay Systems (10 skills)
 
 | Skill | Description |
 |-------|-------------|
 | `player-controller` | CharacterBody2D/3D movement — top-down, platformer, first-person |
 | `input-handling` | InputEvent system, Input Map actions, controllers/gamepads, mouse/touch, action rebinding |
 | `animation-system` | AnimationPlayer, AnimationTree, blend trees, state machines, sprite animation |
+| `tween-animation` | Tween class, easing, chaining, parallel sequences, common motion recipes |
 | `audio-system` | Audio buses, music management, SFX pooling, spatial audio, dynamic mixing |
 | `inventory-system` | Resource-based items, slot management, stacking, UI binding |
 | `dialogue-system` | Branching dialogue trees, conditions, UI presentation |

@@ -12,15 +12,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **2d-essentials** skill — TileMaps, parallax scrolling, 2D lights and shadows, 2D particles, custom drawing, 2D meshes, antialiasing, and pixel-perfect snapping
 - **input-handling** skill — InputEvent system, Input Map actions, controllers/gamepads, mouse/touch, action rebinding, input architecture
 - **3d-essentials** skill — materials, lighting, shadows, environment, global illumination, fog, LOD, occlusion culling, decals, MultiMesh, renderer comparison
+- **tween-animation** skill — Tween class, easing/transitions, chaining/parallel, property/method/callback tweeners, common UI and gameplay motion recipes
 - Superpowers plugin attribution in README
 - Author and support section in README
 - Bidirectional cross-references across all related skills
 
 ### In Progress
 
-New skills planned (2 remaining):
+New skills planned (1 remaining):
 - `particles-vfx` — GPUParticles2D/3D, process materials, subemitters, trails
-- `tween-animation` — Tween class, easing, chaining, property/method tweens
 
 ## [1.1.0] - 2026-04-06
 
