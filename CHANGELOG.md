@@ -13,14 +13,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **input-handling** skill — InputEvent system, Input Map actions, controllers/gamepads, mouse/touch, action rebinding, input architecture
 - **3d-essentials** skill — materials, lighting, shadows, environment, global illumination, fog, LOD, occlusion culling, decals, MultiMesh, renderer comparison
 - **tween-animation** skill — Tween class, easing/transitions, chaining/parallel, property/method/callback tweeners, common UI and gameplay motion recipes
+- **particles-vfx** skill — GPUParticles2D/3D, ParticleProcessMaterial, emission shapes, subemitters, trails, attractors, collision, turbulence, flipbook animation, VFX recipes
 - Superpowers plugin attribution in README
 - Author and support section in README
 - Bidirectional cross-references across all related skills
 
-### In Progress
-
-New skills planned (1 remaining):
-- `particles-vfx` — GPUParticles2D/3D, process materials, subemitters, trails
+All planned skills for v1.2.0 are now complete.
 
 ## [1.1.0] - 2026-04-06
 

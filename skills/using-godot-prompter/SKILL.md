@@ -95,6 +95,7 @@ Skills use Claude Code tool names as the canonical reference. Non-Claude platfor
 ### Rendering & Visual
 - `3d-essentials` — Materials, lighting, shadows, environment, GI, fog, LOD, occlusion, decals
 - `shader-basics` — Godot shader language, visual shaders, common recipes, post-processing
+- `particles-vfx` — GPUParticles2D/3D, process materials, subemitters, trails, attractors
 
 ### Build & Deploy
 - `export-pipeline` — Platform exports, CI/CD
