@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Godot 4.x](https://img.shields.io/badge/Godot-4.3+-blue.svg)](https://godotengine.org)
-[![Skills: 41](https://img.shields.io/badge/Skills-41-green.svg)](#available-skills)
+[![Skills: 44](https://img.shields.io/badge/Skills-44-green.svg)](#available-skills)
 
 Agentic skills framework for Godot 4.x game development. Gives AI coding agents domain-specific expertise for GDScript and C# projects.
 
@@ -12,7 +12,7 @@ Inspired by and built on top of the [Superpowers](https://github.com/obra/superp
 
 GodotPrompter is a plugin that provides **skills** — structured domain knowledge that AI agents load on demand. When you ask your agent to "add a state machine" or "set up multiplayer", it loads the relevant GodotPrompter skill and follows Godot-specific best practices instead of relying on generic knowledge.
 
-**41 skills** covering project setup, architecture, gameplay systems, input handling, physics, 2D/3D systems, animation, shaders, audio, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
+**44 skills** covering project setup, architecture, gameplay systems, input handling, physics, 2D/3D systems, animation, shaders, audio, UI, multiplayer, localization, procedural generation, XR/VR, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
 
 ## Quick Start
 
@@ -160,15 +160,16 @@ GodotPrompter includes 3 specialized agents:
 | `resource-pattern` | Custom Resources for items, stats, config, editor integration |
 | `dependency-injection` | Autoloads, service locators, @export injection, scene injection |
 
-### Physics & 2D/3D (3 skills)
+### Physics, 2D/3D & XR (4 skills)
 
 | Skill | Description |
 |-------|-------------|
 | `physics-system` | RigidBody, Area, raycasting, collision shapes, Jolt, ragdolls, interpolation |
 | `2d-essentials` | TileMaps, parallax, 2D lights/shadows, particles, custom drawing, canvas layers |
 | `3d-essentials` | Materials, lighting, shadows, environment, GI, fog, LOD, occlusion, decals |
+| `xr-development` | OpenXR, XROrigin3D, hand tracking, controllers, passthrough, Meta Quest |
 
-### Gameplay Systems (10 skills)
+### Gameplay Systems (12 skills)
 
 | Skill | Description |
 |-------|-------------|
@@ -176,12 +177,14 @@ GodotPrompter includes 3 specialized agents:
 | `input-handling` | InputEvent system, Input Map actions, controllers/gamepads, mouse/touch, action rebinding |
 | `animation-system` | AnimationPlayer, AnimationTree, blend trees, state machines, sprite animation |
 | `tween-animation` | Tween class, easing, chaining, parallel sequences, common motion recipes |
-| `audio-system` | Audio buses, music management, SFX pooling, spatial audio, dynamic mixing |
+| `audio-system` | Audio buses, music management, SFX pooling, spatial audio, interactive music |
 | `inventory-system` | Resource-based items, slot management, stacking, UI binding |
 | `dialogue-system` | Branching dialogue trees, conditions, UI presentation |
 | `save-load` | ConfigFile, JSON, Resource serialization, version migration |
-| `ai-navigation` | NavigationAgent2D/3D, steering behaviors, patrol patterns |
+| `ai-navigation` | NavigationAgent2D/3D, steering behaviors, patrol patterns, async baking |
 | `camera-system` | Smooth follow, screen shake, camera zones, transitions |
+| `localization` | TranslationServer, CSV/PO files, locale switching, RTL support, pluralization |
+| `procedural-generation` | Noise, BSP dungeons, cellular automata, WFC, seeded randomness |
 
 ### UI/UX (3 skills)
 

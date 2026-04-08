@@ -4,6 +4,26 @@ All notable changes to GodotPrompter will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.0] - 2026-04-09
+
+### Added
+
+- **localization** skill — TranslationServer, CSV/PO translation files, locale switching, RTL support, pluralization
+- **procedural-generation** skill — seeded randomness, FastNoiseLite, BSP dungeons, cellular automata caves, wave function collapse
+- **xr-development** skill — OpenXR setup, XR controllers, hand tracking, physics grabbing, XR UI, passthrough, Meta Quest export
+- 3 new skills bringing total from 41 to 44
+
+### Changed
+
+- **gdscript-patterns** — added `super()` in virtual methods section (Godot 4 breaking change from 3.x)
+- **audio-system** — added interactive music streams (AudioStreamPlaylist, AudioStreamSynchronized, AudioStreamInteractive) and runtime WAV loading (Godot 4.3/4.4+)
+- **ai-navigation** — added async navigation baking on background threads (Godot 4.4+)
+- **animation-system** — added Animation Markers, LookAtModifier3D, SpringBoneSimulator3D, animation retargeting (Godot 4.3/4.4+)
+- **shader-basics** — added Compositor effects and custom render passes (Godot 4.3+)
+- **state-machine** — added hierarchical and parallel FSM patterns for complex characters
+- **2d-essentials** — added TileMap node deprecation notice (use TileMapLayer instead)
+- **physics-system** — added Jolt Physics as default recommendation for new 3D projects (Godot 4.4+)
+
 ## [1.3.0] - 2026-04-08
 
 ### Added
