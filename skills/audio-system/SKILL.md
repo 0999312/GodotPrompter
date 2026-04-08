@@ -745,6 +745,14 @@ sync.SetSyncStreamVolume(2, -80.0f);
 
 GetNode<AudioStreamPlayer>("MusicPlayer").Stream = sync;
 GetNode<AudioStreamPlayer>("MusicPlayer").Play();
+
+// When combat starts — fade in drums layer
+public void OnCombatStarted()
+{
+    var playback = GetNode<AudioStreamPlayer>("MusicPlayer").GetStreamPlayback() as AudioStreamPlaybackSynchronized;
+    var tween = CreateTween();
+    tween.TweenMethod(Callable.From<float>(db => playback.SetStreamVolume(1, db)), -80.0f, 0.0f, 1.5);
+}
 ```
 
 ### AudioStreamInteractive

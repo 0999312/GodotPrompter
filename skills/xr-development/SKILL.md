@@ -209,6 +209,32 @@ func _process(_delta: float) -> void:
                 _on_pinch_detected()
 ```
 
+```csharp
+public partial class XRHandTrackingOrigin : XROrigin3D
+{
+    public override void _Process(double delta)
+    {
+        var xrInterface = XRServer.FindInterface("OpenXR");
+        if (xrInterface == null)
+            return;
+
+        var leftTracker = XRServer.GetTracker("left_hand") as XRHandTracker;
+        if (leftTracker != null)
+        {
+            var flags = leftTracker.GetHandJointFlags(XRHandTracker.HandJoint.IndexTip);
+            if (flags.HasFlag(XRHandTracker.HandJointFlags.PositionTracked))
+            {
+                Vector3 thumbTip = leftTracker.GetHandJointTransform(XRHandTracker.HandJoint.ThumbTip).Origin;
+                Vector3 indexTip = leftTracker.GetHandJointTransform(XRHandTracker.HandJoint.IndexTip).Origin;
+                float pinchDistance = thumbTip.DistanceTo(indexTip);
+                if (pinchDistance < 0.02f) // 2cm threshold
+                    OnPinchDetected();
+            }
+        }
+    }
+}
+```
+
 > **Note:** Hand tracking availability depends on the XR headset. Meta Quest, Apple Vision Pro, and some SteamVR setups support it. Always fall back to controller input.
 
 ---
@@ -260,6 +286,66 @@ func _release() -> void:
         _held_object = null
 ```
 
+```csharp
+public partial class XRGrabController : XRController3D
+{
+    private RigidBody3D _heldObject = null;
+    private Generic6DOFJoint3D _grabJoint = null;
+
+    [Export] public Area3D GrabArea { get; set; }
+
+    public override void _Ready()
+    {
+        ButtonPressed += OnButtonPressed;
+        ButtonReleased += OnButtonReleased;
+    }
+
+    private void OnButtonPressed(string buttonName)
+    {
+        if (buttonName == "grip_click" && _heldObject == null)
+            TryGrab();
+    }
+
+    private void OnButtonReleased(string buttonName)
+    {
+        if (buttonName == "grip_click" && _heldObject != null)
+            Release();
+    }
+
+    private void TryGrab()
+    {
+        foreach (var body in GrabArea.GetOverlappingBodies())
+        {
+            if (body is RigidBody3D rigidBody)
+            {
+                _heldObject = rigidBody;
+                _grabJoint = new Generic6DOFJoint3D();
+                AddChild(_grabJoint);
+                _grabJoint.NodeA = GetPath();
+                _grabJoint.NodeB = _heldObject.GetPath();
+                break;
+            }
+        }
+    }
+
+    private void Release()
+    {
+        if (_grabJoint != null)
+        {
+            _grabJoint.QueueFree();
+            _grabJoint = null;
+        }
+        if (_heldObject != null)
+        {
+            var pose = GetPose();
+            _heldObject.LinearVelocity = pose.LinearVelocity;
+            _heldObject.AngularVelocity = pose.AngularVelocity;
+            _heldObject = null;
+        }
+    }
+}
+```
+
 ---
 
 ## 5. XR UI Interaction
@@ -294,6 +380,32 @@ func _physics_process(_delta: float) -> void:
                 collider.xr_click(ray.get_collision_point())
 ```
 
+```csharp
+public partial class XRPointerController : XRController3D
+{
+    [Export] public RayCast3D Ray { get; set; }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        if (Ray.IsColliding())
+        {
+            var collider = Ray.GetCollider();
+            if (collider is GodotObject obj)
+            {
+                if (obj.HasMethod("xr_hover"))
+                    obj.Call("xr_hover", Ray.GetCollisionPoint());
+
+                if (GetFloat("trigger") > 0.8f)
+                {
+                    if (obj.HasMethod("xr_click"))
+                        obj.Call("xr_click", Ray.GetCollisionPoint());
+                }
+            }
+        }
+    }
+}
+```
+
 > **Tip:** Use the community addon [Godot XR Tools](https://github.com/GodotVR/godot-xr-tools) for production-ready interaction systems, locomotion, and UI helpers.
 
 ---
@@ -311,6 +423,21 @@ func enable_passthrough() -> void:
         # Make the background transparent
         get_viewport().transparent_bg = true
         RenderingServer.set_default_clear_color(Color(0, 0, 0, 0))
+```
+
+```csharp
+private void EnablePassthrough()
+{
+    var xrInterface = XRServer.FindInterface("OpenXR");
+    if (xrInterface != null)
+    {
+        // Request passthrough blend mode
+        xrInterface.EnvironmentBlendMode = XRInterface.EnvironmentBlendModeEnum.AlphaBlend;
+        // Make the background transparent
+        GetViewport().TransparentBg = true;
+        RenderingServer.SetDefaultClearColor(new Color(0, 0, 0, 0));
+    }
+}
 ```
 
 > **Passthrough support:** Meta Quest 3/Pro, Apple Vision Pro, Varjo XR-4. Not all headsets support it.

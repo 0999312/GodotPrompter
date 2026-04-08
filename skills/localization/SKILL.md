@@ -209,7 +209,7 @@ func _ready() -> void:
 
 func _on_language_selected(index: int) -> void:
     TranslationServer.set_locale(_locales[index]["code"])
-    # Save preference (see save-load skill)
+    # Save preference — SettingsManager is a user-created autoload (see save-load skill)
     SettingsManager.set_setting("general", "locale", _locales[index]["code"])
 ```
 

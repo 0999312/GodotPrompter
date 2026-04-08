@@ -263,6 +263,98 @@ func _carve_vertical(tile_map: TileMapLayer, y1: int, y2: int, x: int, tile: Vec
         tile_map.set_cell(Vector2i(x, y), 0, tile)
 ```
 
+### C#
+
+```csharp
+public partial class BSPDungeon : RefCounted
+{
+    private RandomNumberGenerator _rng = new();
+    private int _minRoomSize = 5;
+    public Godot.Collections.Array<Rect2I> Rooms { get; } = new();
+
+    public Godot.Collections.Array<Rect2I> Generate(Rect2I bounds, ulong genSeed)
+    {
+        _rng.Seed = genSeed;
+        Rooms.Clear();
+        Split(bounds);
+        return Rooms;
+    }
+
+    private void Split(Rect2I area)
+    {
+        if (area.Size.X <= _minRoomSize * 2 && area.Size.Y <= _minRoomSize * 2)
+        {
+            var room = new Rect2I(
+                area.Position + new Vector2I(1, 1),
+                area.Size - new Vector2I(2, 2)
+            );
+            if (room.Size.X >= _minRoomSize && room.Size.Y >= _minRoomSize)
+                Rooms.Add(room);
+            return;
+        }
+
+        bool splitHorizontal;
+        if (area.Size.X > area.Size.Y * 1.25f)
+            splitHorizontal = false;
+        else if (area.Size.Y > area.Size.X * 1.25f)
+            splitHorizontal = true;
+        else
+            splitHorizontal = _rng.Randi() % 2 == 0;
+
+        if (splitHorizontal)
+        {
+            int splitY = _rng.RandiRange(
+                area.Position.Y + _minRoomSize,
+                area.End.Y - _minRoomSize
+            );
+            Split(new Rect2I(area.Position, new Vector2I(area.Size.X, splitY - area.Position.Y)));
+            Split(new Rect2I(new Vector2I(area.Position.X, splitY), new Vector2I(area.Size.X, area.End.Y - splitY)));
+        }
+        else
+        {
+            int splitX = _rng.RandiRange(
+                area.Position.X + _minRoomSize,
+                area.End.X - _minRoomSize
+            );
+            Split(new Rect2I(area.Position, new Vector2I(splitX - area.Position.X, area.Size.Y)));
+            Split(new Rect2I(new Vector2I(splitX, area.Position.Y), new Vector2I(area.End.X - splitX, area.Size.Y)));
+        }
+    }
+
+    public void ConnectRooms(TileMapLayer tileMap, Vector2I floorTile)
+    {
+        for (int i = 0; i < Rooms.Count - 1; i++)
+        {
+            Vector2I centerA = Rooms[i].Position + Rooms[i].Size / 2;
+            Vector2I centerB = Rooms[i + 1].Position + Rooms[i + 1].Size / 2;
+
+            if (_rng.Randi() % 2 == 0)
+            {
+                CarveHorizontal(tileMap, centerA.X, centerB.X, centerA.Y, floorTile);
+                CarveVertical(tileMap, centerA.Y, centerB.Y, centerB.X, floorTile);
+            }
+            else
+            {
+                CarveVertical(tileMap, centerA.Y, centerB.Y, centerA.X, floorTile);
+                CarveHorizontal(tileMap, centerA.X, centerB.X, centerB.Y, floorTile);
+            }
+        }
+    }
+
+    private static void CarveHorizontal(TileMapLayer tileMap, int x1, int x2, int y, Vector2I tile)
+    {
+        for (int x = Mathf.Min(x1, x2); x <= Mathf.Max(x1, x2); x++)
+            tileMap.SetCell(new Vector2I(x, y), 0, tile);
+    }
+
+    private static void CarveVertical(TileMapLayer tileMap, int y1, int y2, int x, Vector2I tile)
+    {
+        for (int y = Mathf.Min(y1, y2); y <= Mathf.Max(y1, y2); y++)
+            tileMap.SetCell(new Vector2I(x, y), 0, tile);
+    }
+}
+```
+
 ---
 
 ## 4. Cellular Automata (Cave Generation)
@@ -331,6 +423,79 @@ func apply_cave_to_tilemap(tile_map: TileMapLayer, grid: Array[Array]) -> void:
         for x in grid[y].size():
             var tile := wall_tile if grid[y][x] else floor_tile
             tile_map.set_cell(Vector2i(x, y), 0, tile)
+```
+
+### C#
+
+```csharp
+public partial class CaveGenerator : RefCounted
+{
+    private RandomNumberGenerator _rng = new();
+
+    public bool[][] Generate(int width, int height, ulong genSeed, float fillChance = 0.45f, int iterations = 5)
+    {
+        _rng.Seed = genSeed;
+
+        // Step 1: Random fill
+        bool[][] grid = new bool[height][];
+        for (int y = 0; y < height; y++)
+        {
+            grid[y] = new bool[width];
+            for (int x = 0; x < width; x++)
+            {
+                bool isEdge = x == 0 || y == 0 || x == width - 1 || y == height - 1;
+                grid[y][x] = isEdge || _rng.Randf() < fillChance;
+            }
+        }
+
+        // Step 2: Smooth with cellular automata rules
+        for (int i = 0; i < iterations; i++)
+            grid = Smooth(grid, width, height);
+
+        return grid;
+    }
+
+    private static bool[][] Smooth(bool[][] grid, int width, int height)
+    {
+        bool[][] newGrid = new bool[height][];
+        for (int y = 0; y < height; y++)
+        {
+            newGrid[y] = new bool[width];
+            for (int x = 0; x < width; x++)
+            {
+                int wallCount = CountNeighbors(grid, x, y, width, height);
+                // Rule: become wall if 5+ of 9 cells (self + 8 neighbors) are walls
+                newGrid[y][x] = wallCount >= 5;
+            }
+        }
+        return newGrid;
+    }
+
+    private static int CountNeighbors(bool[][] grid, int cx, int cy, int width, int height)
+    {
+        int count = 0;
+        for (int dy = -1; dy <= 1; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                int nx = cx + dx, ny = cy + dy;
+                if (nx < 0 || ny < 0 || nx >= width || ny >= height)
+                    count++;  // out of bounds counts as wall
+                else if (grid[ny][nx])
+                    count++;
+            }
+        return count;
+    }
+}
+
+public static void ApplyCaveToTilemap(TileMapLayer tileMap, bool[][] grid)
+{
+    var wallTile = new Vector2I(0, 0);
+    var floorTile = new Vector2I(1, 0);
+
+    for (int y = 0; y < grid.Length; y++)
+        for (int x = 0; x < grid[y].Length; x++)
+            tileMap.SetCell(new Vector2I(x, y), 0, grid[y][x] ? wallTile : floorTile);
+}
 ```
 
 ---
@@ -420,6 +585,110 @@ func _dir_to_name(dir: Vector2i) -> String:
     if dir == Vector2i(0, 1):  return "down"
     if dir == Vector2i(-1, 0): return "left"
     return "right"
+```
+
+### C#
+
+```csharp
+public partial class SimpleWFC : RefCounted
+{
+    // grid[y][x] = list of possible tile indices
+    private List<int>[][] _grid = [];
+    // rules[tileId]["up"|"down"|"left"|"right"] = list of allowed neighbour tile ids
+    private Godot.Collections.Dictionary<int, Godot.Collections.Dictionary<string, Godot.Collections.Array<int>>> _rules = new();
+    private RandomNumberGenerator _rng = new();
+
+    public void Setup(int width, int height, int tileCount, ulong genSeed)
+    {
+        _rng.Seed = genSeed;
+        _grid = new List<int>[height][];
+        for (int y = 0; y < height; y++)
+        {
+            _grid[y] = new List<int>[width];
+            for (int x = 0; x < width; x++)
+            {
+                _grid[y][x] = new List<int>();
+                for (int t = 0; t < tileCount; t++)
+                    _grid[y][x].Add(t);
+            }
+        }
+    }
+
+    public bool Collapse()
+    {
+        while (true)
+        {
+            // Find cell with fewest possibilities (lowest entropy)
+            var minCell = new Vector2I(-1, -1);
+            int minCount = 999;
+            for (int y = 0; y < _grid.Length; y++)
+                for (int x = 0; x < _grid[y].Length; x++)
+                {
+                    int count = _grid[y][x].Count;
+                    if (count > 1 && count < minCount)
+                    {
+                        minCount = count;
+                        minCell = new Vector2I(x, y);
+                    }
+                }
+
+            if (minCell == new Vector2I(-1, -1))
+                return true;  // all collapsed — success
+
+            // Collapse: pick a random possibility
+            var cell = _grid[minCell.Y][minCell.X];
+            if (cell.Count == 0)
+                return false;  // contradiction — no valid tiles
+            int chosen = cell[(int)(_rng.Randi() % (uint)cell.Count)];
+            _grid[minCell.Y][minCell.X] = [chosen];
+
+            // Propagate constraints to neighbors
+            Propagate(minCell);
+        }
+    }
+
+    private void Propagate(Vector2I pos)
+    {
+        var stack = new Stack<Vector2I>();
+        stack.Push(pos);
+        while (stack.Count > 0)
+        {
+            var current = stack.Pop();
+            var currentTiles = _grid[current.Y][current.X];
+
+            foreach (var dir in new[] { new Vector2I(0, -1), new Vector2I(0, 1), new Vector2I(-1, 0), new Vector2I(1, 0) })
+            {
+                var neighbor = current + dir;
+                if (neighbor.X < 0 || neighbor.Y < 0 || neighbor.Y >= _grid.Length || neighbor.X >= _grid[0].Length)
+                    continue;
+
+                string dirName = DirToName(dir);
+                var allowed = new HashSet<int>();
+                foreach (int tile in currentTiles)
+                    if (_rules.TryGetValue(tile, out var tileRules) && tileRules.TryGetValue(dirName, out var allowedTiles))
+                        foreach (int allowedTile in allowedTiles)
+                            allowed.Add(allowedTile);
+
+                var neighborTiles = _grid[neighbor.Y][neighbor.X];
+                var newTiles = neighborTiles.Where(t => allowed.Contains(t)).ToList();
+
+                if (newTiles.Count < neighborTiles.Count)
+                {
+                    _grid[neighbor.Y][neighbor.X] = newTiles;
+                    stack.Push(neighbor);
+                }
+            }
+        }
+    }
+
+    private static string DirToName(Vector2I dir)
+    {
+        if (dir == new Vector2I(0, -1)) return "up";
+        if (dir == new Vector2I(0, 1))  return "down";
+        if (dir == new Vector2I(-1, 0)) return "left";
+        return "right";
+    }
+}
 ```
 
 > **For production WFC**, consider the community addon [godot-wfc](https://github.com/AlexeyBond/godot-wfc) which provides editor integration, TileMap support, and 3D grid WFC.
