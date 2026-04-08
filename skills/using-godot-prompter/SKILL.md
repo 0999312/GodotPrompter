@@ -81,6 +81,8 @@ Skills use Claude Code tool names as the canonical reference. Non-Claude platfor
 - `ai-navigation` — NavigationAgent, behavior trees
 - `camera-system` — Camera follow, shake, zones
 - `audio-system` — Audio buses, music management, SFX pooling, spatial audio
+- `localization` — i18n/l10n, TranslationServer, CSV/PO, locale switching, RTL
+- `procedural-generation` — Noise, BSP dungeons, cellular automata, WFC, seeded randomness
 
 ### UI/UX
 - `godot-ui` — Control nodes, themes, containers
@@ -96,6 +98,7 @@ Skills use Claude Code tool names as the canonical reference. Non-Claude platfor
 - `physics-system` — RigidBody, Area, raycasting, collision shapes, Jolt, ragdolls
 - `2d-essentials` — TileMaps, parallax, 2D lights/shadows, particles, canvas layers
 - `3d-essentials` — Materials, lighting, shadows, environment, GI, fog, LOD, decals
+- `xr-development` — OpenXR, XROrigin3D, hand tracking, controllers, Meta Quest
 
 ### Rendering & Visual
 - `shader-basics` — Godot shader language, visual shaders, common recipes, post-processing
