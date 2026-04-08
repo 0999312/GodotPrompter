@@ -32,7 +32,7 @@ Main (Node3D)
 │   │   └── LeftHandModel (MeshInstance3D or hand tracking)
 │   ├── XRController3D (right)    ← Right controller
 │   │   └── RightHandModel
-│   └── XRBody3D (optional)       ← Full body tracking if available
+│   └── (XRBodyTracker via XRServer — optional full body tracking)
 ├── WorldEnvironment
 └── GameWorld (Node3D)
     └── ... level geometry

@@ -682,7 +682,7 @@ playlist.stream_count = 2
 playlist.set_list_stream(0, preload("res://audio/music/boss_intro.ogg"))
 playlist.set_list_stream(1, preload("res://audio/music/boss_loop.ogg"))
 # BPM sync ensures transitions land on beat boundaries
-playlist.set_bpm(120.0)
+playlist.bpm = 120.0
 playlist.shuffle = false
 playlist.loop = true    # loop the entire playlist
 
@@ -724,7 +724,7 @@ $MusicPlayer.play()
 
 # When combat starts — fade in drums layer
 func _on_combat_started() -> void:
-    var playback: AudioStreamPlaybackSynchronized = $MusicPlayer.get_stream_playback()
+    var playback := $MusicPlayer.get_stream_playback() as AudioStreamPlaybackSynchronized
     # Tween the volume of layer 1 from silent to audible
     var tween := create_tween()
     tween.tween_method(
