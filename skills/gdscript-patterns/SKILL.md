@@ -292,12 +292,13 @@ match event:
     {"type": "heal", "amount": var amt}:
         heal(amt)
 
-# Guard (when) — additional condition
+# Nested condition inside a branch
 match enemy_type:
-    "boss" when health < 50:
-        enter_rage_mode()
     "boss":
-        normal_attack()
+        if health < 50:
+            enter_rage_mode()
+        else:
+            normal_attack()
 ```
 
 ---
@@ -523,7 +524,7 @@ var health: int = 100:
 | `@export_group`       | Group heading in Inspector                 |
 | `@export_subgroup`    | Subgroup heading                           |
 | `@export_category`    | Category divider                           |
-| `@onready`            | Initialize after `_ready()` but before `_ready()` body |
+| `@onready`            | Initialize when node enters tree, just before `_ready()` body runs |
 | `@tool`               | Run script in editor                       |
 | `@icon`               | Custom icon for the script                 |
 | `@warning_ignore`     | Suppress specific warning on next line     |

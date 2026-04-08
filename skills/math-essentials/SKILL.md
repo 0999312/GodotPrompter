@@ -92,6 +92,12 @@ var edge2: Vector3 = vertex_c - vertex_a
 var normal: Vector3 = edge1.cross(edge2).normalized()
 ```
 
+```csharp
+Vector3 edge1 = vertexB - vertexA;
+Vector3 edge2 = vertexC - vertexA;
+Vector3 normal = edge1.Cross(edge2).Normalized();
+```
+
 ---
 
 ## 2. Transforms
@@ -331,8 +337,8 @@ var ranged_int: int = randi_range(1, 6)   # 1 to 6 (inclusive)
 ```csharp
 float f = GD.Randf();
 int i = GD.Randi();
-float ranged = (float)GD.RandRange(1.0, 10.0);
-int rangedInt = GD.RandRange(1, 6);  // cast to int
+float ranged = GD.RandfRange(1.0f, 10.0f);
+int rangedInt = GD.RandiRange(1, 6);
 ```
 
 ### RandomNumberGenerator (Seeded)
@@ -408,6 +414,14 @@ noise.seed = randi()
 var height: float = noise.get_noise_2d(x, y)  # returns -1.0 to 1.0
 ```
 
+```csharp
+var noise = new FastNoiseLite();
+noise.NoiseType = FastNoiseLite.NoiseTypeEnum.SimplexSmooth;
+noise.Frequency = 0.05f;
+noise.Seed = (int)GD.Randi();
+float height = noise.GetNoise2D(x, y);
+```
+
 ---
 
 ## 6. Common Game Math Recipes
@@ -458,6 +472,19 @@ func _process(delta: float) -> void:
     position.y = _base_y + sin(Time.get_ticks_msec() / 1000.0 * bob_speed) * bob_amplitude
 ```
 
+```csharp
+private float _baseY;
+
+public override void _Ready() => _baseY = Position.Y;
+
+public override void _Process(double delta)
+{
+    Vector2 pos = Position;
+    pos.Y = _baseY + Mathf.Sin(Time.GetTicksMsec() / 1000.0f * bobSpeed) * bobAmplitude;
+    Position = pos;
+}
+```
+
 ### Angle Wrapping
 
 ```gdscript
@@ -501,7 +528,7 @@ func approach_with_deadzone(current: Vector2, target: Vector2, speed: float, dea
 | Distance check too slow              | Calling `distance_to` on many objects        | Use `distance_squared_to` and compare against `range * range`    |
 | Normalized zero vector crashes       | Calling `normalized()` on `Vector2.ZERO`     | Check `length() > 0` first, or use `direction_to()`             |
 | Transform interpolation looks wrong  | Lerping euler angles instead of quaternions  | Use `Quaternion.slerp()` or `Transform3D.interpolate_with()`    |
-| Random results repeat after restart  | Global RNG uses same seed                    | Call `randomize()` at game start, or use `RandomNumberGenerator` |
+| Random results repeat after restart  | Using `RandomNumberGenerator` with fixed seed | Godot 4.x auto-seeds global RNG; for `RandomNumberGenerator` use `randomize()` or set `seed` |
 | Noise values are all ~0              | `frequency` too low                          | Increase `FastNoiseLite.frequency` (try 0.01–0.1)               |
 
 ---
