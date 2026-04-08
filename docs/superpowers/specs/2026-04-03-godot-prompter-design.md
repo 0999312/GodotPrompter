@@ -107,6 +107,22 @@ godot-prompter/
 | `csharp-godot` | C# | C# conventions |
 | `csharp-signals` | C# | C# signal patterns |
 
+### v1.4.0 — Godot Source Alignment
+
+| Change | Type | Skill |
+|--------|------|-------|
+| `super()` requirement section | Update | `gdscript-patterns` |
+| Interactive music streams + runtime WAV | Update | `audio-system` |
+| Async navigation baking | Update | `ai-navigation` |
+| Animation Markers, LookAtModifier3D, SpringBoneSimulator3D | Update | `animation-system` |
+| Compositor effects | Update | `shader-basics` |
+| Hierarchical/parallel FSM | Update | `state-machine` |
+| TileMap deprecation note | Update | `2d-essentials` |
+| Jolt-as-default messaging | Update | `physics-system` |
+| i18n/l10n, TranslationServer, CSV/PO | New skill | `localization` |
+| Noise, BSP, WFC, cellular automata | New skill | `procedural-generation` |
+| OpenXR, hand tracking, Meta Quest | New skill | `xr-development` |
+
 ## MVP Definition (Phase 1 Complete)
 
 Phase 1 is complete when:
