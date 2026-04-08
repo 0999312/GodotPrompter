@@ -83,6 +83,8 @@ Vector2 screenPos = GetViewport().GetScreenTransform() * GetGlobalTransformWithC
 
 ## 2. TileMap System
 
+> **Deprecation notice:** The old `TileMap` node (with in-node layer management) is deprecated as of Godot 4.3. Use individual `TileMapLayer` nodes instead — one node per layer. All examples in this skill use the current `TileMapLayer` approach. If you encounter legacy code using the old `TileMap` node, migrate by replacing it with separate `TileMapLayer` nodes sharing the same `TileSet` resource.
+
 ### TileSet Resource Setup
 
 1. Add a `TileMapLayer` node

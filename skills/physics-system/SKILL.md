@@ -13,6 +13,8 @@ All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first,
 
 ## 1. Physics Body Types
 
+> **Godot 4.4+ recommendation:** Jolt Physics is now the default physics engine for new 3D projects and is built into the engine. For new 3D projects, use Jolt unless you have a specific reason to use GodotPhysics. See Section 8 for Jolt details and differences. 2D physics always uses GodotPhysics.
+
 Godot provides four collision object types. The last three extend `PhysicsBody2D`/`PhysicsBody3D`:
 
 | Type | Moved By | Use For |
