@@ -28,12 +28,23 @@ Read `skills/godot-code-review/SKILL.md` — this is your primary review framewo
 
 Based on what the code does, also read:
 - Player movement? Read `skills/player-controller/SKILL.md`
+- Input handling? Read `skills/input-handling/SKILL.md`
 - State machine? Read `skills/state-machine/SKILL.md`
+- Animation? Read `skills/animation-system/SKILL.md`, `skills/tween-animation/SKILL.md`
+- Particles/VFX? Read `skills/particles-vfx/SKILL.md`
+- Shaders? Read `skills/shader-basics/SKILL.md`
+- Audio? Read `skills/audio-system/SKILL.md`
 - Inventory? Read `skills/inventory-system/SKILL.md`
 - AI/Navigation? Read `skills/ai-navigation/SKILL.md`
 - UI? Read `skills/godot-ui/SKILL.md`, `skills/hud-system/SKILL.md`
 - Signals? Read `skills/event-bus/SKILL.md`
 - Save/Load? Read `skills/save-load/SKILL.md`
+- 2D rendering? Read `skills/2d-essentials/SKILL.md`
+- 3D rendering? Read `skills/3d-essentials/SKILL.md`
+- Physics? Read `skills/physics-system/SKILL.md`
+- GDScript patterns? Read `skills/gdscript-patterns/SKILL.md`
+- Math? Read `skills/math-essentials/SKILL.md`
+- Assets/Import? Read `skills/assets-pipeline/SKILL.md`
 - Performance? Read `skills/godot-optimization/SKILL.md`
 
 **Step 3: Review the code**

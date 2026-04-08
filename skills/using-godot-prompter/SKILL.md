@@ -92,8 +92,12 @@ Skills use Claude Code tool names as the canonical reference. Non-Claude platfor
 - `multiplayer-sync` — Synchronization, interpolation
 - `dedicated-server` — Headless export, server architecture
 
+### Physics & 2D/3D
+- `physics-system` — RigidBody, Area, raycasting, collision shapes, Jolt, ragdolls
+- `2d-essentials` — TileMaps, parallax, 2D lights/shadows, particles, canvas layers
+- `3d-essentials` — Materials, lighting, shadows, environment, GI, fog, LOD, decals
+
 ### Rendering & Visual
-- `3d-essentials` — Materials, lighting, shadows, environment, GI, fog, LOD, occlusion, decals
 - `shader-basics` — Godot shader language, visual shaders, common recipes, post-processing
 - `particles-vfx` — GPUParticles2D/3D, process materials, subemitters, trails, attractors
 

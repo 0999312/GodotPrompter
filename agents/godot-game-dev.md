@@ -20,11 +20,16 @@ You have access to GodotPrompter skills — read them before writing code:
 
 - **Core:** `skills/godot-project-setup/SKILL.md`, `skills/godot-debugging/SKILL.md`, `skills/godot-testing/SKILL.md`
 - **Architecture:** `skills/scene-organization/SKILL.md`, `skills/state-machine/SKILL.md`, `skills/event-bus/SKILL.md`, `skills/component-system/SKILL.md`, `skills/resource-pattern/SKILL.md`
-- **Gameplay:** `skills/player-controller/SKILL.md`, `skills/ai-navigation/SKILL.md`, `skills/inventory-system/SKILL.md`, `skills/dialogue-system/SKILL.md`, `skills/camera-system/SKILL.md`, `skills/save-load/SKILL.md`
+- **Gameplay:** `skills/player-controller/SKILL.md`, `skills/input-handling/SKILL.md`, `skills/ai-navigation/SKILL.md`, `skills/inventory-system/SKILL.md`, `skills/dialogue-system/SKILL.md`, `skills/camera-system/SKILL.md`, `skills/save-load/SKILL.md`
+- **Animation & VFX:** `skills/animation-system/SKILL.md`, `skills/tween-animation/SKILL.md`, `skills/particles-vfx/SKILL.md`
+- **Audio:** `skills/audio-system/SKILL.md`
 - **UI:** `skills/godot-ui/SKILL.md`, `skills/responsive-ui/SKILL.md`, `skills/hud-system/SKILL.md`
+- **Rendering:** `skills/shader-basics/SKILL.md`, `skills/2d-essentials/SKILL.md`, `skills/3d-essentials/SKILL.md`
+- **Physics:** `skills/physics-system/SKILL.md`
 - **Multiplayer:** `skills/multiplayer-basics/SKILL.md`, `skills/multiplayer-sync/SKILL.md`, `skills/dedicated-server/SKILL.md`
-- **Build:** `skills/export-pipeline/SKILL.md`, `skills/godot-optimization/SKILL.md`, `skills/addon-development/SKILL.md`
-- **C#:** `skills/csharp-godot/SKILL.md`, `skills/csharp-signals/SKILL.md`
+- **Build:** `skills/export-pipeline/SKILL.md`, `skills/godot-optimization/SKILL.md`, `skills/addon-development/SKILL.md`, `skills/assets-pipeline/SKILL.md`
+- **Scripting:** `skills/gdscript-patterns/SKILL.md`, `skills/csharp-godot/SKILL.md`, `skills/csharp-signals/SKILL.md`
+- **Math:** `skills/math-essentials/SKILL.md`
 
 ## Your Process
 

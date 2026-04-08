@@ -18,7 +18,12 @@ You have access to GodotPrompter skills — read them for authoritative Godot pa
 
 - **Architecture:** Read `skills/scene-organization/SKILL.md`, `skills/state-machine/SKILL.md`, `skills/event-bus/SKILL.md`, `skills/component-system/SKILL.md`, `skills/resource-pattern/SKILL.md`, `skills/dependency-injection/SKILL.md`
 - **Design:** Read `skills/godot-brainstorming/SKILL.md` for structured design process
-- **Gameplay:** Read `skills/player-controller/SKILL.md`, `skills/ai-navigation/SKILL.md`, `skills/inventory-system/SKILL.md`, `skills/dialogue-system/SKILL.md`, `skills/camera-system/SKILL.md`, `skills/save-load/SKILL.md`
+- **Gameplay:** Read `skills/player-controller/SKILL.md`, `skills/input-handling/SKILL.md`, `skills/ai-navigation/SKILL.md`, `skills/inventory-system/SKILL.md`, `skills/dialogue-system/SKILL.md`, `skills/camera-system/SKILL.md`, `skills/save-load/SKILL.md`
+- **Animation & VFX:** Read `skills/animation-system/SKILL.md`, `skills/tween-animation/SKILL.md`, `skills/particles-vfx/SKILL.md`
+- **Rendering:** Read `skills/shader-basics/SKILL.md`, `skills/2d-essentials/SKILL.md`, `skills/3d-essentials/SKILL.md`
+- **Audio:** Read `skills/audio-system/SKILL.md`
+- **Physics:** Read `skills/physics-system/SKILL.md`
+- **Math:** Read `skills/math-essentials/SKILL.md`
 
 Always read the relevant skill before giving advice. Use skill content, not generic knowledge.
 

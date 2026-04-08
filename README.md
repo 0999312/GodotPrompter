@@ -96,8 +96,11 @@ Ask the agent to brainstorm a feature. It loads `godot-brainstorming` and walks 
 
 ### 2. Implementation Phase
 For each task, the agent loads the relevant domain skill:
-- Building a player? → `player-controller` + `state-machine`
+- Building a player? → `player-controller` + `input-handling` + `state-machine`
 - Adding inventory? → `inventory-system` + `resource-pattern`
+- Setting up 3D scene? → `3d-essentials` + `assets-pipeline`
+- Adding particles? → `particles-vfx` + `shader-basics`
+- Need animations? → `animation-system` + `tween-animation`
 - Need save/load? → `save-load`
 
 ### 3. Review Phase
