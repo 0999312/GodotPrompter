@@ -237,7 +237,6 @@ tween.TweenProperty(this, "position:y", 0.0f, 0.5f)
 | `TRANS_BACK`     | Overshoots target slightly             | Bouncy UI buttons                   |
 | `TRANS_ELASTIC`  | Spring oscillation                     | Playful/cartoon effects             |
 | `TRANS_BOUNCE`   | Bounces at the end                     | Dropping objects, landing           |
-| `TRANS_SPRING`   | Spring-like approach to target         | Snapping elements                   |
 
 ### Ease Types
 
@@ -275,6 +274,10 @@ tween.TweenProperty(panel, "position:x", panel.Position.X, 0.4f)
 ```gdscript
 # Ensure tween starts from wherever the property is right now
 tween.tween_property(self, "position", target_pos, 0.5).from_current()
+```
+
+```csharp
+tween.TweenProperty(this, "position", targetPos, 0.5f).FromCurrent();
 ```
 
 ### as_relative() — Final value is added to current
@@ -539,6 +542,17 @@ func start_pulse(node: CanvasItem) -> void:
         .set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 ```
 
+```csharp
+public void StartPulse(CanvasItem node)
+{
+    var tween = node.CreateTween().SetLoops();
+    tween.TweenProperty(node, "modulate:a", 0.4f, 0.8f)
+        .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+    tween.TweenProperty(node, "modulate:a", 1.0f, 0.8f)
+        .SetTrans(Tween.TransitionType.Sine).SetEase(Tween.EaseType.InOut);
+}
+```
+
 ### Screen Shake
 
 ```gdscript
@@ -551,6 +565,8 @@ func shake(intensity: float = 8.0, duration: float = 0.3) -> void:
         Vector2(randf_range(-intensity, intensity), randf_range(-intensity, intensity)), 0.02)
     tween.finished.connect(func(): offset = Vector2.ZERO)
 ```
+
+> **Note:** Tween offsets are fixed at creation time, so each loop shakes to the same positions. For truly random per-frame shake, use `_process()` with a timer instead.
 
 ### Shader Parameter Animation
 
