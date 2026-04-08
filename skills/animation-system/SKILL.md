@@ -479,7 +479,125 @@ _animTree.Set("parameters/BlendSpace2D/blend_position", inputDir);
 
 ---
 
-## 6. Common Animation Recipes
+## 6. Godot 4.4+ Animation Features
+
+### Animation Markers
+
+Markers (Godot 4.4+) define named points or regions within an animation clip. Use them for subregion loops, section-based playback, and audio-synced events without splitting clips.
+
+```gdscript
+# Check if the current animation has passed a marker
+@onready var anim_player: AnimationPlayer = $AnimationPlayer
+
+func _process(_delta: float) -> void:
+    # AnimationPlayer exposes marker methods:
+    if anim_player.current_animation == "attack":
+        var pos: float = anim_player.current_animation_position
+        # Use markers to define "wind_up", "hit_frame", "recovery" regions
+        # Markers are set in the Animation editor (bottom panel)
+```
+
+**Setup in the editor:**
+1. Open an animation in the Animation panel
+2. Right-click the timeline → **Add Marker**
+3. Name the marker (e.g., `hit_frame`, `loop_start`)
+4. Use markers as reference points in code or for AudioStreamInteractive sync
+
+### LookAtModifier3D (Godot 4.4+)
+
+Procedurally rotates a bone to look at a target. Ideal for head tracking and eye contact without extra animation clips.
+
+```
+Character (CharacterBody3D)
+├── Skeleton3D
+│   └── LookAtModifier3D
+│       (bone = "Head", target = ../LookTarget)
+└── LookTarget (Marker3D — position at NPC's conversation partner)
+```
+
+```gdscript
+# Configure LookAtModifier3D in code
+@onready var look_at: LookAtModifier3D = $Skeleton3D/LookAtModifier3D
+
+func _ready() -> void:
+    look_at.bone_name = "Head"
+    look_at.target_node = $"../LookTarget".get_path()
+    # Limit rotation to avoid unnatural head angles
+    look_at.use_angle_limitation = true
+    look_at.symmetry_limitation = deg_to_rad(70.0)  # max 70° turn
+    look_at.primary_limit_angle = deg_to_rad(45.0)   # vertical limit
+
+func look_at_player(player: Node3D) -> void:
+    $LookTarget.global_position = player.global_position + Vector3(0, 1.5, 0)
+
+func stop_looking() -> void:
+    look_at.influence = 0.0  # blend back to animation
+```
+
+```csharp
+public partial class LookAtExample : CharacterBody3D
+{
+    private LookAtModifier3D _lookAt;
+
+    public override void _Ready()
+    {
+        _lookAt = GetNode<LookAtModifier3D>("Skeleton3D/LookAtModifier3D");
+        _lookAt.BoneName = "Head";
+        _lookAt.TargetNode = GetNode("../LookTarget").GetPath();
+        _lookAt.UseAngleLimitation = true;
+        _lookAt.SymmetryLimitation = Mathf.DegToRad(70f);
+    }
+
+    public void LookAtPlayer(Node3D player)
+    {
+        GetNode<Marker3D>("../LookTarget").GlobalPosition = player.GlobalPosition + new Vector3(0, 1.5f, 0);
+    }
+
+    public void StopLooking() => _lookAt.Influence = 0f;
+}
+```
+
+### SpringBoneSimulator3D (Godot 4.4+)
+
+Simulates spring physics on bones — hair, capes, tails, antennas bounce and sway procedurally.
+
+```
+Character (CharacterBody3D)
+├── Skeleton3D
+│   └── SpringBoneSimulator3D
+│       (configure bone chains in Inspector)
+```
+
+**Setup:**
+1. Add `SpringBoneSimulator3D` as child of `Skeleton3D`
+2. In Inspector → **Settings** → **Add Spring Bone**
+3. Select the root bone of the chain (e.g., `Hair_Root` or `Tail_01`)
+4. Configure `End Bone` (last bone in chain)
+5. Tune physics: `Stiffness`, `Damping`, `Gravity`
+
+| Property | Effect |
+|----------|--------|
+| `Stiffness` | How strongly the bone returns to rest (higher = stiffer) |
+| `Damping` | How quickly oscillations settle (higher = less bouncy) |
+| `Gravity` | Downward pull on the chain |
+| `Drag` | Air resistance (slows movement) |
+
+> **Tip:** Start with Stiffness 5.0, Damping 0.5, Gravity 1.0 for hair. Increase Stiffness to 15+ for stiff antennas.
+
+### Animation Retargeting on Import (Godot 4.3+)
+
+Godot 4.3 can retarget animations from one skeleton to another during `.glb`/`.gltf` import. Use this to share a library of animations across differently-proportioned characters.
+
+**Setup:**
+1. In the Import dock for a `.glb` file, expand **Animation**
+2. Enable **Retarget** and assign a `SkeletonProfile` (e.g., `SkeletonProfileHumanoid`)
+3. Map source skeleton bones to the profile's bone names
+4. Re-import — animations now target the profile's generic bone names
+5. Any skeleton using the same `SkeletonProfile` can play these animations
+
+---
+
+## 7. Common Animation Recipes
 
 ### Hit Flash
 
@@ -597,7 +715,7 @@ func shake(intensity: float = 5.0, duration: float = 0.2) -> void:
 
 ---
 
-## 7. Common Pitfalls
+## 8. Common Pitfalls
 
 | Symptom                            | Cause                                            | Fix                                                                 |
 |------------------------------------|--------------------------------------------------|---------------------------------------------------------------------|
@@ -611,7 +729,7 @@ func shake(intensity: float = 5.0, duration: float = 0.2) -> void:
 
 ---
 
-## 8. Implementation Checklist
+## 9. Implementation Checklist
 
 - [ ] AnimationPlayer is a direct child of the animated node (not nested deeper)
 - [ ] All animation track node paths are valid (no broken references after scene restructuring)
@@ -622,3 +740,6 @@ func shake(intensity: float = 5.0, duration: float = 0.2) -> void:
 - [ ] Call Method tracks are used for gameplay events (hitbox enable/disable, spawn projectiles, play SFX)
 - [ ] Blend parameters are set from gameplay code every frame (not just on state change)
 - [ ] `animation_finished` signal is connected for one-shot animations that need follow-up logic
+- [ ] Head/eye tracking uses `LookAtModifier3D` instead of manual bone rotation (Godot 4.4+)
+- [ ] Hair, capes, and tails use `SpringBoneSimulator3D` instead of custom physics scripts (Godot 4.4+)
+- [ ] Shared animation libraries use retargeting with `SkeletonProfileHumanoid` (Godot 4.3+)
