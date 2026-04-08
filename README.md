@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Godot 4.x](https://img.shields.io/badge/Godot-4.3+-blue.svg)](https://godotengine.org)
-[![Skills: 37](https://img.shields.io/badge/Skills-38-green.svg)](#available-skills)
+[![Skills: 37](https://img.shields.io/badge/Skills-41-green.svg)](#available-skills)
 
 Agentic skills framework for Godot 4.x game development. Gives AI coding agents domain-specific expertise for GDScript and C# projects.
 
@@ -12,7 +12,7 @@ Inspired by and built on top of the [Superpowers](https://github.com/obra/superp
 
 GodotPrompter is a plugin that provides **skills** — structured domain knowledge that AI agents load on demand. When you ask your agent to "add a state machine" or "set up multiplayer", it loads the relevant GodotPrompter skill and follows Godot-specific best practices instead of relying on generic knowledge.
 
-**38 skills** covering project setup, architecture, gameplay systems, input handling, physics, 2D/3D systems, animation, shaders, audio, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
+**41 skills** covering project setup, architecture, gameplay systems, input handling, physics, 2D/3D systems, animation, shaders, audio, UI, multiplayer, optimization, and C# patterns. All targeting Godot 4.3+ with both GDScript and C# examples.
 
 ## Quick Start
 
@@ -194,20 +194,28 @@ GodotPrompter includes 3 specialized agents:
 | `shader-basics` | Godot shader language, visual shaders, common recipes, post-processing |
 | `particles-vfx` | GPUParticles2D/3D, process materials, subemitters, trails, attractors, collision |
 
-### Build & Deploy (3 skills)
+### Build & Deploy (4 skills)
 
 | Skill | Description |
 |-------|-------------|
 | `export-pipeline` | Platform exports, CI/CD with GitHub Actions, itch.io/Steam deploy |
 | `godot-optimization` | Profiler, draw calls, physics tuning, object pooling, bottlenecks |
 | `addon-development` | EditorPlugin, @tool scripts, custom inspectors, dock panels |
+| `assets-pipeline` | Image compression, 3D scene import, audio formats, resource management |
 
-### C# Specific (2 skills)
+### Scripting (3 skills)
 
 | Skill | Description |
 |-------|-------------|
+| `gdscript-patterns` | Static typing, await/coroutines, lambdas, match, exports, common idioms |
 | `csharp-godot` | C# conventions, GodotSharp API, project setup, GDScript interop |
 | `csharp-signals` | [Signal] delegates, EmitSignal, async awaiting, event architecture |
+
+### Math & Data (1 skill)
+
+| Skill | Description |
+|-------|-------------|
+| `math-essentials` | Vectors, transforms, interpolation, curves, paths, RNG, game math recipes |
 
 ## Validation
 

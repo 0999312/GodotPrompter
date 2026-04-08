@@ -101,7 +101,12 @@ Skills use Claude Code tool names as the canonical reference. Non-Claude platfor
 - `export-pipeline` — Platform exports, CI/CD
 - `godot-optimization` — Profiler, performance patterns
 - `addon-development` — EditorPlugin, tool scripts
+- `assets-pipeline` — Image compression, 3D scene import, audio formats, resource management
 
-### C# Specific
+### Scripting
+- `gdscript-patterns` — Static typing, await/coroutines, lambdas, match, exports, idioms
 - `csharp-godot` — C# conventions, GodotSharp API
 - `csharp-signals` — C# signal patterns
+
+### Math & Data
+- `math-essentials` — Vectors, transforms, interpolation, curves, paths, RNG
