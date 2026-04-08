@@ -45,7 +45,7 @@ The agent loads the `godot-project-setup` skill and provides a complete director
 ### Gemini CLI
 
 ```bash
-gemini extensions install jame581/godot-prompter-marketplace
+gemini extensions install https://github.com/jame581/GodotPrompter
 ```
 
 ### GitHub Copilot CLI
@@ -121,7 +121,7 @@ GodotPrompter includes 3 specialized agents:
 | Platform | Status | Install |
 |----------|--------|---------|
 | Claude Code | Primary | `claude plugins marketplace add jame581/godot-prompter-marketplace` |
-| Gemini CLI | Supported | `gemini extensions install jame581/godot-prompter-marketplace` |
+| Gemini CLI | Supported | `gemini extensions install https://github.com/jame581/GodotPrompter` |
 | GitHub Copilot CLI | Supported | `copilot plugin marketplace add jame581/godot-prompter-marketplace` |
 | Cursor | Supported | `/add-plugin godot-prompter` or clone with `.cursor-plugin/` |
 | Codex | Supported | Clone + symlink (see `.codex/INSTALL.md`) |
