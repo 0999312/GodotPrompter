@@ -46,6 +46,55 @@ GetNode<NavigationRegion2D>("NavigationRegion2D").BakeNavigationPolygon();
 GetNode<NavigationRegion3D>("NavigationRegion3D").BakeNavigationMesh();
 ```
 
+### Async Navigation Baking (Godot 4.4+)
+
+Navigation baking can cause frame drops on large maps. Godot 4.4 supports baking on a background thread:
+
+```gdscript
+# 2D — bake on a background thread
+func rebake_async() -> void:
+	var nav_region: NavigationRegion2D = $NavigationRegion2D
+	# Connect to know when baking finishes
+	NavigationServer2D.bake_from_source_geometry_data_async(
+		nav_region.navigation_polygon,
+		NavigationMeshSourceGeometryData2D.new()
+	)
+	# Or use the region's built-in signal:
+	nav_region.bake_finished.connect(_on_bake_finished, CONNECT_ONE_SHOT)
+	nav_region.bake_navigation_polygon(true)  # true = use thread
+
+func _on_bake_finished() -> void:
+	print("Navigation mesh ready")
+```
+
+```gdscript
+# 3D — bake on a background thread
+func rebake_async_3d() -> void:
+	var nav_region: NavigationRegion3D = $NavigationRegion3D
+	nav_region.bake_finished.connect(_on_bake_finished_3d, CONNECT_ONE_SHOT)
+	nav_region.bake_navigation_mesh(true)  # true = use thread
+
+func _on_bake_finished_3d() -> void:
+	print("3D navigation mesh ready")
+```
+
+```csharp
+// 3D — bake on a background thread
+public void RebakeAsync3D()
+{
+    var navRegion = GetNode<NavigationRegion3D>("NavigationRegion3D");
+    navRegion.BakeFinished += OnBakeFinished;
+    navRegion.BakeNavigationMesh(true); // true = use thread
+}
+
+private void OnBakeFinished()
+{
+    GD.Print("3D navigation mesh ready");
+}
+```
+
+> **When to use async baking:** Procedurally generated levels, destructible terrain, or any scene where the navigation mesh must be rebuilt at runtime. The game continues running while the mesh bakes.
+
 ### Navigation Layers
 
 Navigation layers let you separate walkable areas for different agent types (ground troops, flying units, large enemies).
@@ -1052,6 +1101,7 @@ public partial class ChaseAttackEnemy : CharacterBody2D
 | **Wrong navigation layer** | Agent ignores some regions or finds no path | Confirm `navigation_layers` bitmask matches between the NavigationRegion and the NavigationAgent |
 | **Target set before NavigationServer is ready** | Path is empty on the first frame | Defer `target_position` assignment to `_ready()` or await `NavigationServer2D.map_changed` |
 | **Gravity ignored in 3D** | Agent floats or sinks into the floor | Always accumulate `velocity.y` from gravity separately; only zero out X/Z from the nav direction |
+| **Baking causes frame drop** | Synchronous bake on large maps blocks the main thread | Use async baking: `bake_navigation_mesh(true)` (Godot 4.4+); connect `bake_finished` signal |
 
 ---
 
@@ -1067,3 +1117,4 @@ public partial class ChaseAttackEnemy : CharacterBody2D
 - [ ] Path target updated via a throttle timer rather than every frame when following a moving player
 - [ ] `agent_radius` small enough to fit through the narrowest passage in the level
 - [ ] Gravity applied independently of horizontal nav velocity (3D only)
+- [ ] Large or dynamic maps use async baking (`bake_navigation_mesh(true)`) to avoid frame drops (Godot 4.4+)
