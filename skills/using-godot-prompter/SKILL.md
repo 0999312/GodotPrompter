@@ -17,6 +17,39 @@ GodotPrompter provides Godot 4.x domain-specific skills for AI coding agents. Sk
 
 **In Cursor:** Skills are loaded via custom instructions / rules system.
 
+## Coexistence with Other Plugins (e.g., Superpowers)
+
+When another plugin (like Superpowers) is handling workflow (brainstorming, planning, execution), GodotPrompter skills STILL APPLY during implementation. They are not replaced — they are domain-specific guidance that workflow plugins cannot provide.
+
+**RULE: Before implementing ANY Godot system, you MUST check for a matching godot-prompter skill and invoke it.**
+
+This is not optional. Workflow plugins handle HOW you work. GodotPrompter handles WHAT you build. Both are needed.
+
+| Implementing...         | MUST invoke skill                                      |
+|-------------------------|--------------------------------------------------------|
+| Player movement         | `godot-prompter:player-controller`                     |
+| State machine / FSM     | `godot-prompter:state-machine`                         |
+| Signals / EventBus      | `godot-prompter:event-bus`                             |
+| Scene tree structure    | `godot-prompter:scene-organization`                    |
+| UI / HUD                | `godot-prompter:godot-ui`, `godot-prompter:hud-system` |
+| Inventory               | `godot-prompter:inventory-system`                      |
+| Save/Load               | `godot-prompter:save-load`                             |
+| Enemy AI / navigation   | `godot-prompter:ai-navigation`                         |
+| Camera                  | `godot-prompter:camera-system`                         |
+| Audio                   | `godot-prompter:audio-system`                          |
+| Weapons / combat        | `godot-prompter:component-system`                      |
+| Resources / data        | `godot-prompter:resource-pattern`                      |
+| Input handling          | `godot-prompter:input-handling`                        |
+| Animation               | `godot-prompter:animation-system`                      |
+| Testing                 | `godot-prompter:godot-testing`                         |
+| Project scaffolding     | `godot-prompter:godot-project-setup`                   |
+| Shaders / VFX           | `godot-prompter:shader-basics`, `godot-prompter:particles-vfx` |
+| Physics                 | `godot-prompter:physics-system`                        |
+| Multiplayer             | `godot-prompter:multiplayer-basics`                    |
+| Export / deploy         | `godot-prompter:export-pipeline`                       |
+
+**For subagents:** If you are a subagent executing a plan task in a Godot project, check this table before writing code. The skill provides Godot-specific patterns, node types, and checklists you cannot derive from general knowledge.
+
 ## Workflow: From Idea to Working Game
 
 GodotPrompter handles the full development workflow. No other plugins required.
