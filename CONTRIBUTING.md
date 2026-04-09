@@ -90,31 +90,31 @@ Agent system prompt goes here.
 
 ## Releasing a New Version
 
-When publishing a new version (e.g., v1.4.0):
+When publishing a new version (e.g., v1.4.1):
 
 1. **Make changes** in the GodotPrompter repo, commit, push
 2. **Update version** in these files:
-   - `.claude-plugin/plugin.json` → `"version": "1.4.0"`
-   - `package.json` → `"version": "1.4.0"`
-   - `CHANGELOG.md` → add `## [1.4.0]` section
+   - `.claude-plugin/plugin.json` → `"version": "1.4.1"`
+   - `package.json` → `"version": "1.4.1"`
+   - `CHANGELOG.md` → add `## [1.4.1]` section
 3. **Commit and tag:**
    ```bash
    git add .claude-plugin/plugin.json package.json CHANGELOG.md
-   git commit -m "chore: bump version to 1.4.0"
-   git tag -a v1.4.0 -m "v1.4.0 — description of changes"
+   git commit -m "chore: bump version to 1.4.1"
+   git tag -a v1.4.1 -m "v1.4.1 — description of changes"
    git push origin master --tags
    ```
 4. **Create GitHub release:**
    ```bash
-   gh release create v1.4.0 --title "v1.4.0 — GodotPrompter" --notes "Release notes here"
+   gh release create v1.4.1 --title "v1.4.1 — GodotPrompter" --notes "Release notes here"
    ```
 5. **Update the marketplace repo** (`godot-prompter-marketplace`):
-   - Update `.claude-plugin/marketplace.json` → `"version": "1.4.0"`
+   - Update `.claude-plugin/marketplace.json` → `"version": "1.4.1"`
    - Commit and push
    ```bash
    cd ../godot-prompter-marketplace
    # edit .claude-plugin/marketplace.json version
-   git add -A && git commit -m "bump to v1.4.0" && git push
+   git add -A && git commit -m "bump to v1.4.1" && git push
    ```
 
 Users update with:

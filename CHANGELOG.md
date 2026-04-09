@@ -4,6 +4,14 @@ All notable changes to GodotPrompter will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.1] - 2026-04-09
+
+### Fixed
+
+- **using-godot-prompter** — added coexistence section ensuring GodotPrompter skills are invoked even when another workflow plugin (e.g., Superpowers) drives the session
+- **godot-brainstorming** — rewrote Step 4 to inject a `## GodotPrompter` section into project CLAUDE.md and annotate plan tasks with required skill references
+- **godot-project-setup** — added CLAUDE.md GodotPrompter section to project setup checklist
+
 ## [1.4.0] - 2026-04-09
 
 ### Added
