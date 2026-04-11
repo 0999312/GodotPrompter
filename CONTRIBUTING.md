@@ -1,6 +1,6 @@
 # Contributing to GodotPrompter
 
-Thanks for your interest in contributing! GodotPrompter is an open-source skills framework for Godot 4.x. Here's how to add skills and improve existing ones.
+Thanks for your interest in contributing! GodotPrompter is an open-source skills framework for Godot 4.x. Please review our [Code of Conduct](CODE_OF_CONDUCT.md) before participating. Here's how to add skills and improve existing ones.
 
 ## Adding a New Skill
 
