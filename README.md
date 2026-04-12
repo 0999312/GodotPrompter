@@ -52,7 +52,7 @@ gemini extensions install https://github.com/jame581/GodotPrompter
 
 ```bash
 copilot plugin marketplace add jame581/godot-prompter-marketplace
-copilot plugin install godot-prompter@godot-prompter
+copilot plugin install godot-prompter@godot-prompter-marketplace
 ```
 
 ### Cursor
