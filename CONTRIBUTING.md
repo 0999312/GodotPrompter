@@ -108,9 +108,16 @@ When publishing a new version (e.g., v1.4.1):
    ```bash
    gh release create v1.4.1 --title "v1.4.1 — GodotPrompter" --notes "Release notes here"
    ```
-5. **Update the marketplace repo** (`godot-prompter-marketplace`):
-   - Update `.claude-plugin/marketplace.json` → `"version": "1.4.1"`
+5. **Update the Skillsmith marketplace** (`skillsmith` — primary distribution):
+   - Update `.claude-plugin/marketplace.json` → the `godot-prompter` plugin entry's `"version": "1.4.1"`
    - Commit and push
+   ```bash
+   cd ../skillsmith
+   # edit .claude-plugin/marketplace.json version
+   git add -A && git commit -m "bump godot-prompter to v1.4.1" && git push
+   ```
+6. **Also update the legacy marketplace** (`godot-prompter-marketplace` — for existing installs only, do not advertise):
+   - Update `.claude-plugin/marketplace.json` → `"version": "1.4.1"`
    ```bash
    cd ../godot-prompter-marketplace
    # edit .claude-plugin/marketplace.json version

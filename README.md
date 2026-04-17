@@ -20,10 +20,10 @@ GodotPrompter is a plugin that provides **skills** — structured domain knowled
 
 ```bash
 # Add the marketplace
-claude plugins marketplace add jame581/godot-prompter-marketplace
+claude plugins marketplace add jame581/skillsmith
 
 # Install the plugin
-claude plugins install godot-prompter
+claude plugins install godot-prompter@skillsmith
 ```
 
 Or install from a local clone:
@@ -51,8 +51,8 @@ gemini extensions install https://github.com/jame581/GodotPrompter
 ### GitHub Copilot CLI
 
 ```bash
-copilot plugin marketplace add jame581/godot-prompter-marketplace
-copilot plugin install godot-prompter@godot-prompter-marketplace
+copilot plugin marketplace add jame581/skillsmith
+copilot plugin install godot-prompter@skillsmith
 ```
 
 ### Cursor
@@ -129,12 +129,14 @@ GodotPrompter includes 3 specialized agents:
 
 | Platform | Status | Install |
 |----------|--------|---------|
-| Claude Code | Primary | `claude plugins marketplace add jame581/godot-prompter-marketplace` |
+| Claude Code | Primary | `claude plugins marketplace add jame581/skillsmith` |
 | Gemini CLI | Supported | `gemini extensions install https://github.com/jame581/GodotPrompter` |
-| GitHub Copilot CLI | Supported | `copilot plugin marketplace add jame581/godot-prompter-marketplace` |
+| GitHub Copilot CLI | Supported | `copilot plugin marketplace add jame581/skillsmith` |
 | Cursor | Supported | `/add-plugin godot-prompter` or clone with `.cursor-plugin/` |
 | Codex | Supported | Clone + symlink (see `.codex/INSTALL.md`) |
 | OpenCode | Supported | Add to `opencode.json` (see `.opencode/INSTALL.md`) |
+
+> **Legacy marketplace:** The [`godot-prompter-marketplace`](https://github.com/jame581/godot-prompter-marketplace) repo remains online so existing installs keep receiving updates, but new users should install from [`skillsmith`](https://github.com/jame581/skillsmith).
 
 ## Available Skills
 

@@ -92,7 +92,8 @@ When releasing:
 1. Update version in `.claude-plugin/plugin.json`, `package.json`, `CHANGELOG.md`
 2. Commit, tag (`v<version>`), push with tags
 3. Create GitHub release
-4. Update marketplace repo (`godot-prompter-marketplace`)
+4. Bump version in `skillsmith/.claude-plugin/marketplace.json` (primary distribution)
+5. Also bump version in legacy `godot-prompter-marketplace/.claude-plugin/marketplace.json` (for existing installs only — not advertised to new users)
 
 ## Code Style
 
