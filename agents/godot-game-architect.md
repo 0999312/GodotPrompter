@@ -57,3 +57,16 @@ Always read the relevant skill before giving advice. Use skill content, not gene
 - Keep scenes focused on one responsibility (scene-organization skill)
 - Show both GDScript and C# when relevant
 - Target Godot 4.3+ APIs only
+
+## Strict Typing in Designs (Godot 4.4+ / 4.6.2)
+
+When producing design docs, scene tree sketches, signal maps, Resource schemas, or any GDScript snippets:
+
+1. **All Resource fields must have explicit `: Type` annotations** in the design (no implicit Variant).
+2. **All signal signatures must declare typed parameters** — `signal hit(damage: int, source: Node)`.
+3. **All planned APIs must declare typed parameters and return types**.
+4. **Prefer typed collections** in data design — `Array[Item]`, `Dictionary[String, int]`.
+5. **Recommend `untyped_declaration` and `inferred_declaration` warnings be set to `error`** in `project.godot` for new projects.
+6. When example snippets must use `:=`, ensure the RHS is a strongly typed expression (not Variant-returning APIs like `Dictionary.get`, `JSON.parse_string`, `Object.get/call`, untyped `load`/`get_node`).
+
+This prevents downstream `godot-game-dev` implementations from triggering Variant inference errors.

@@ -41,6 +41,91 @@ var items := []                  # inferred as Array (untyped)
 var count := 0                   # inferred as int
 ```
 
+### Variant Inference Trap (Godot 4.4+ / 4.6.2 strict mode)
+
+**Problem:** When the right-hand side of `:=` returns `Variant`, the variable is inferred as `Variant`, triggering the warning:
+`The variable type is being inferred from a Variant value, so it will be typed as Variant.`
+With "Warnings as Errors" (default in many CI setups and recommended for 4.6.2 projects), this fails the build.
+
+**Variant-returning APIs that must NOT be assigned with `:=`:**
+
+| API / expression | Returns | Correct pattern |
+|---|---|---|
+| `Dictionary.get(key)` | Variant | `var v: int = d.get("hp", 0)` |
+| `Dictionary[key]` (untyped dict) | Variant | Use `Dictionary[K, V]` typed dict, or annotate |
+| `Array` element access (untyped) | Variant | Use `Array[T]` and index normally |
+| `JSON.parse_string(s)` | Variant | `var data: Dictionary = JSON.parse_string(s)` (with null check) |
+| `str_to_var(s)` / `bytes_to_var(b)` | Variant | Annotate target type explicitly |
+| `Object.get(prop)` / `get_meta(name)` | Variant | Annotate target type |
+| `Object.call(name, ...)` / `callv(...)` | Variant | Annotate or `as Type` |
+| `load("res://...")` | Resource | `var scn: PackedScene = load(path) as PackedScene` |
+| `ResourceLoader.load(...)` | Resource | Same as above |
+| `get_node(path)` (no class hint) | Node | `@onready var p: Player = $Player` or `as Player` |
+| `get_node_or_null(path)` | Node | Annotate target with `: NodeType` |
+| Signal callback param without annotation | Variant | Annotate every param |
+| Lambda param/return without annotation | Variant | `func(x: int) -> int: return x * 2` |
+| `match` value bound to var | Variant | Annotate the bound var |
+| `for x in untyped_array` | Variant | Use `Array[T]` so `x` is typed |
+| `@export var data` (no type) | Variant | `@export var data: MyResource` |
+| `Color.from_string(s, default)` returning fallback | Variant in some paths | Annotate explicitly |
+| `Engine.get_singleton(name)` | Object | Annotate or cast |
+
+**Defensive rules — apply on every code generation:**
+
+1. **Use explicit `: Type =` instead of `:=` whenever the RHS could be Variant.** When in doubt, annotate.
+2. **Always type collections at declaration** — `Array[T]`, `Dictionary[K, V]` (Godot 4.4+).
+3. **Always annotate signal handler parameters and lambda parameters/returns.**
+4. **Always cast `load()` / `get_node()` / `Object.call()` / `Object.get()` results** with `as Type` or annotate the receiving variable.
+5. **Always annotate `@export` variables.**
+6. **Never use bare `:=` with `Dictionary.get(...)`, `JSON.parse_string(...)`, `str_to_var(...)`, `Object.get(...)`, `Object.call(...)`, `callv(...)`.**
+7. **Avoid `@warning_ignore("inference")` and `@warning_ignore("untyped_declaration")`** as a fix — only use them with a justification comment when the API genuinely returns Variant by design (e.g. parsing arbitrary JSON), and even then narrow the scope.
+
+**Examples — wrong vs right:**
+
+```gdscript
+# WRONG — all of these produce Variant inference warnings/errors
+var hp := data.get("hp", 100)              # Dictionary.get returns Variant
+var scene := load("res://Player.tscn")     # load returns Resource (too broad)
+var player := get_node("Player")           # get_node returns Node
+var parsed := JSON.parse_string(text)      # returns Variant
+var children := get_children()             # returns Array (untyped)
+func _on_body_entered(body):               # body is Variant
+    body.take_damage(10)
+var doubler := func(x): return x * 2       # x and return are Variant
+
+# RIGHT — explicit types
+var hp: int = data.get("hp", 100)
+var scene: PackedScene = load("res://Player.tscn") as PackedScene
+@onready var player: Player = $Player
+var parsed: Dictionary = JSON.parse_string(text)
+if parsed == null:
+    push_error("invalid JSON"); return
+var children: Array[Node] = get_children()
+func _on_body_entered(body: Node2D) -> void:
+    if body is Player:
+        (body as Player).take_damage(10)
+var doubler := func(x: int) -> int: return x * 2   # := is fine because lambda is fully typed
+```
+
+**Typed Dictionary (Godot 4.4+):**
+
+```gdscript
+var stats: Dictionary[String, int] = {"hp": 100, "mp": 50}
+var hp := stats["hp"]   # OK — inferred as int because dict is typed
+```
+
+**Project-level enforcement (recommended for Godot 4.6.2 projects):**
+In `project.godot`, set the following warning levels to `error`:
+- `untyped_declaration`
+- `inferred_declaration`
+- `unsafe_property_access`
+- `unsafe_method_access`
+- `unsafe_call_argument`
+- `unsafe_cast`
+- `return_value_discarded` (optional, recommended)
+
+This forces the AI agent and human contributors to write fully typed code from the start.
+
 ### Typed Collections
 
 ```gdscript

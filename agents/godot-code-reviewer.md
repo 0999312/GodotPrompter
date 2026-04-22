@@ -105,3 +105,21 @@ Use this format:
 - Acknowledge what's done well before listing issues
 - Categorize severity: Critical > Important > Minor
 - Suggest fixes, don't just point out problems
+
+## Mandatory Variant Inference Audit (GDScript, Godot 4.4+ / 4.6.2)
+
+For every GDScript file reviewed, run this audit and report findings as **Critical** severity (because they break builds when "Warnings as Errors" is enabled):
+
+1. **`:=` with Variant-returning RHS** — flag every occurrence of `:=` followed by:
+   - `.get(` (Dictionary), `[` on untyped Dictionary
+   - `JSON.parse_string(`, `str_to_var(`, `bytes_to_var(`
+   - `.call(`, `callv(`, `.get(` on Object, `get_meta(`
+   - `load(`, `ResourceLoader.load(` (without `as Type` cast)
+   - `get_node(`, `get_node_or_null(` (without class hint)
+   - `get_children(` on untyped containers
+2. **Untyped collections** — flag `Array` / `Dictionary` declarations missing `[T]` / `[K, V]` parameters in Godot 4.4+ projects.
+3. **Untyped signal handlers / lambdas** — flag any `func _on_*(x):` or `func(x):` without parameter and return annotations.
+4. **Untyped `@export`** — flag `@export var name` without `: Type`.
+5. **Suppressions** — flag any `@warning_ignore("inference")` or `@warning_ignore("untyped_declaration")` lacking a justification comment.
+
+For each finding, provide the corrected line using `: Type =` annotation or `as Type` cast. Reference `skills/gdscript-patterns/SKILL.md` → "Variant Inference Trap" for the full pattern table.

@@ -62,3 +62,33 @@ You have access to GodotPrompter skills — read them before writing code:
 - Prefer signals over direct node references
 - Use groups over hardcoded node paths
 - Target Godot 4.3+ APIs — no deprecated methods
+
+## GDScript Strict Typing Rules (Godot 4.4+ / 4.6.2)
+
+To prevent the warning `The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error.)`, ALL generated GDScript must obey:
+
+1. **Prefer explicit `: Type =` over `:=`** whenever the right-hand side could return Variant. When in doubt, annotate.
+2. **Never use bare `:=` with these Variant-returning APIs:**
+   - `Dictionary.get(...)`, untyped `Dictionary[key]`
+   - `JSON.parse_string(...)`, `str_to_var(...)`, `bytes_to_var(...)`
+   - `Object.get(...)`, `Object.call(...)`, `callv(...)`, `get_meta(...)`
+   - `load(...)`, `ResourceLoader.load(...)` — always cast `as PackedScene` / `as Resource subclass`
+   - `get_node(...)` / `get_node_or_null(...)` without class hint — use `@onready var x: T = $Path` or cast `as T`
+   - `get_children()` of untyped containers — annotate as `Array[Node]` or specific subtype
+3. **Always type collections** at declaration: `Array[T]`, `Dictionary[K, V]` (Godot 4.4+ typed dictionaries).
+4. **Always annotate** signal handler parameters, lambda parameters, lambda return types, and `@export` variables.
+5. **Use `as Type` casts** when narrowing from Node/Object/Resource base types.
+6. **Do NOT silence with `@warning_ignore("inference")` or `@warning_ignore("untyped_declaration")`** unless the API is intrinsically Variant (e.g. arbitrary JSON parsing) AND a justification comment is present AND the ignore is scoped to a single line.
+7. **Verify before finishing**: re-scan generated code for the patterns in rule 2; rewrite any matches with explicit annotations.
+
+For the full pattern table and right/wrong examples, see `skills/gdscript-patterns/SKILL.md` → "Variant Inference Trap".
+
+## Pre-Submit Self-Check (mandatory)
+
+Before reporting completion, scan your generated GDScript for these red flags and fix every occurrence:
+
+- `:= ` followed by `.get(`, `JSON.parse`, `str_to_var`, `bytes_to_var`, `.call(`, `callv(`, `load(`, `get_node(`, `get_node_or_null(`, `get_meta(`, `get_children(`
+- Untyped function parameters or missing `-> ReturnType`
+- `@export var name` with no `: Type`
+- `for x in ...` where the iterable is not `Array[T]` / `Dictionary[K, V]`
+- Untyped lambdas: `func(x):` or `func(x) -> :`
