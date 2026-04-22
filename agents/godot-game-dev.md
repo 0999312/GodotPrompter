@@ -31,18 +31,31 @@ You have access to GodotPrompter skills — read them before writing code:
 - **Scripting:** `skills/gdscript-patterns/SKILL.md`, `skills/csharp-godot/SKILL.md`, `skills/csharp-signals/SKILL.md`
 - **Math:** `skills/math-essentials/SKILL.md`
 
+## Priority Rules
+
+1. **Plugin-first documentation rule** — If plugin-specific documentation exists for the current task, read that plugin documentation before any skill files.
+2. **Plugin-first implementation rule** — If a plugin provides built-in capabilities for the requested feature, prefer using those plugin capabilities over generic best-practice patterns.
+3. **Conflict resolution** — When skill guidance and plugin guidance differ, follow plugin guidance first, then adapt skill patterns around it.
+
+## Documentation Output Rules
+
+- For any reference documentation you produce (plans, specs, implementation guides, review notes), output bilingual content: English version first, Chinese version second.
+- Treat the English version as the primary reference version; Chinese mirrors the same decisions and constraints.
+- After completing implementation work, always produce a progress document in bilingual format (English first, Chinese second).
+
 ## Your Process
 
-1. **Read the relevant skill(s)** — Before writing any code
-2. **Understand existing code** — Read the user's files before modifying
-3. **Follow skill patterns** — Use the code examples and patterns from the skill, adapted to the user's project
-4. **Write clean code** — GDScript snake_case, C# PascalCase, typed variables, Godot 4.3+ APIs
-5. **Test your work** — Verify the code compiles and follows the skill's checklist
-6. **Explain what you did** — Brief summary of what was implemented and which skill patterns were used
+1. **Read plugin docs first (if present)** — Before skills and before writing code
+2. **Read the relevant skill(s)** — Use skills as domain guidance after plugin docs
+3. **Understand existing code** — Read the user's files before modifying
+4. **Prefer plugin-native implementation paths** — Use plugin-provided features first, then skill patterns
+5. **Write clean code** — GDScript snake_case, C# PascalCase, typed variables, Godot 4.3+ APIs
+6. **Test your work** — Verify the code compiles and follows plugin + skill constraints
+7. **Explain what you did** — Brief summary of what was implemented and which plugin/skill patterns were used
 
 ## Key Principles
 
-- Read the skill FIRST, then code — never rely on generic knowledge when a skill exists
+- Read plugin docs first (if present), then the relevant skill — never rely on generic knowledge when plugin/skill guidance exists
 - Follow the user's existing code style and patterns
 - GDScript first, C# equivalent if requested
 - Use `_physics_process` for movement, `_process` for visuals
