@@ -95,11 +95,13 @@ When publishing a new version (e.g., v1.4.1):
 1. **Make changes** in the GodotPrompter repo, commit, push
 2. **Update version** in these files:
    - `.claude-plugin/plugin.json` → `"version": "1.4.1"`
+   - `.cursor-plugin/plugin.json` → `"version": "1.4.1"`
+   - `gemini-extension.json` → `"version": "1.4.1"`
    - `package.json` → `"version": "1.4.1"`
    - `CHANGELOG.md` → add `## [1.4.1]` section
 3. **Commit and tag:**
    ```bash
-   git add .claude-plugin/plugin.json package.json CHANGELOG.md
+   git add .claude-plugin/plugin.json .cursor-plugin/plugin.json gemini-extension.json package.json CHANGELOG.md
    git commit -m "chore: bump version to 1.4.1"
    git tag -a v1.4.1 -m "v1.4.1 — description of changes"
    git push origin master --tags
@@ -108,27 +110,16 @@ When publishing a new version (e.g., v1.4.1):
    ```bash
    gh release create v1.4.1 --title "v1.4.1 — GodotPrompter" --notes "Release notes here"
    ```
-5. **Update the Skillsmith marketplace** (`skillsmith` — primary distribution):
-   - Update `.claude-plugin/marketplace.json` → the `godot-prompter` plugin entry's `"version": "1.4.1"`
-   - Commit and push
+5. **Install via local clone:**
    ```bash
-   cd ../skillsmith
-   # edit .claude-plugin/marketplace.json version
-   git add -A && git commit -m "bump godot-prompter to v1.4.1" && git push
-   ```
-6. **Also update the legacy marketplace** (`godot-prompter-marketplace` — for existing installs only, do not advertise):
-   - Update `.claude-plugin/marketplace.json` → `"version": "1.4.1"`
-   ```bash
-   cd ../godot-prompter-marketplace
-   # edit .claude-plugin/marketplace.json version
-   git add -A && git commit -m "bump to v1.4.1" && git push
+   claude plugins marketplace add ./GodotPrompter
+   claude plugins install godot-prompter@godot-prompter
    ```
 
 Users update with:
 ```bash
-claude plugins update godot-prompter          # Claude Code
-copilot plugin update godot-prompter          # Copilot CLI
-gemini extensions update godot-prompter       # Gemini CLI
+cd /path/to/GodotPrompter && git pull     # pull latest fork changes
+# then restart the agent session
 ```
 
 ## Conventions

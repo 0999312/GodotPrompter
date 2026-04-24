@@ -86,14 +86,12 @@ model: inherit
 
 ## Version Management
 
-Current version: check `package.json` and `.claude-plugin/plugin.json` (must match).
+Current version: check `package.json`, `.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, and `gemini-extension.json` (must all match).
 
 When releasing:
-1. Update version in `.claude-plugin/plugin.json`, `package.json`, `CHANGELOG.md`
+1. Update version in `.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `gemini-extension.json`, `package.json`, `CHANGELOG.md`
 2. Commit, tag (`v<version>`), push with tags
 3. Create GitHub release
-4. Bump version in `skillsmith/.claude-plugin/marketplace.json` (primary distribution)
-5. Also bump version in legacy `godot-prompter-marketplace/.claude-plugin/marketplace.json` (for existing installs only — not advertised to new users)
 
 ## Code Style
 

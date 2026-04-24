@@ -4,6 +4,35 @@ All notable changes to GodotPrompter will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.1-fork] - 2026-04-25
+
+### Fork changes
+
+This is a **fork** of the original [jame581/GodotPrompter](https://github.com/jame581/GodotPrompter) (v1.4.1). All prior release history (v1.0.0–v1.4.1) belongs to the original upstream.
+
+### Added
+
+- **godot-game-dev** — GDScript Strict Typing Rules (Godot 4.4+ / 4.6.2): explicit `: Type =` over `:=` for Variant-returning APIs, typed collections, annotated signal handlers/lambdas, `@export` types, pre-submit self-check scan
+- **godot-game-architect** — Strict Typing in Designs (Godot 4.4+ / 4.6.2): typed Resource fields, typed signal signatures, typed API declarations in design docs
+- **godot-code-reviewer** — Mandatory Variant Inference Audit for all GDScript reviews: 5-point audit checklist covering `:=` misuse, untyped collections, untyped signals/lambdas, untyped `@export`, unjustified warning suppressions
+- All 3 agents — Plugin-first documentation and implementation rules (plugin docs override generic best-practices when present)
+- All 3 agents — Bilingual documentation output requirement (English first, Chinese second)
+- All 3 agents — Prefer plugin-native capabilities over generic patterns in conflicts
+
+### Changed
+
+- **Fork adjustment** — All repository URLs updated from `jame581` to `0999312`
+- **using-godot-prompter** — Fixed doc path: `docs/godot-prompter/plans/` → `docs/superpowers/plans/` (actual directory path)
+- **CLAUDE.md** — Version management now lists all 4 version-bearing files (.claude-plugin, .cursor-plugin, gemini-extension.json, package.json); removed external marketplace release steps (fork uses local install)
+- **CONTRIBUTING.md** — Release process updated for fork workflow (local install, no external marketplace repos)
+- **README.md** — All installation URLs updated to fork; marketplace install instructions replaced with clone+local install; fork attribution added
+- **gemini-extension.json** — Added missing author, homepage, license, and keywords fields
+- **package.json** — Added `contributors` array attributing original creator; updated author and repository URL
+
+### Fixed
+
+- **using-godot-prompter** — Fixed incorrect doc path reference (`docs/godot-prompter/` → `docs/superpowers/`)
+
 ## [1.4.1] - 2026-04-09
 
 ### Fixed

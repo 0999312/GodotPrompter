@@ -10,7 +10,7 @@ Add godot-prompter to the `plugin` array in your `opencode.json` (global or proj
 
 ```json
 {
-  "plugin": ["godot-prompter@git+https://github.com/jame581/GodotPrompter.git"]
+  "plugin": ["godot-prompter@git+https://github.com/0999312/GodotPrompter.git"]
 }
 ```
 
@@ -35,7 +35,7 @@ To pin a specific version:
 
 ```json
 {
-  "plugin": ["godot-prompter@git+https://github.com/jame581/GodotPrompter.git#v1.0.0"]
+  "plugin": ["godot-prompter@git+https://github.com/0999312/GodotPrompter.git#v1.0.0"]
 }
 ```
 
@@ -57,4 +57,4 @@ When skills reference Claude Code tools:
 
 ## Getting Help
 
-Report issues: https://github.com/jame581/GodotPrompter/issues
+Report issues: https://github.com/0999312/GodotPrompter/issues

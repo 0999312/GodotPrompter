@@ -19,17 +19,18 @@ GodotPrompter is a plugin that provides **skills** — structured domain knowled
 ### Claude Code (recommended)
 
 ```bash
-# Add the marketplace
-claude plugins marketplace add jame581/skillsmith
+# Clone the fork
+git clone https://github.com/0999312/GodotPrompter.git
 
-# Install the plugin
-claude plugins install godot-prompter@skillsmith
+# Add local marketplace and install
+claude plugins marketplace add ./GodotPrompter
+claude plugins install godot-prompter@godot-prompter
 ```
 
 Or install from a local clone:
 
 ```bash
-git clone https://github.com/jame581/GodotPrompter.git
+git clone https://github.com/0999312/GodotPrompter.git
 claude plugins marketplace add ./GodotPrompter
 claude plugins install godot-prompter@godot-prompter
 ```
@@ -45,14 +46,18 @@ The agent loads the `godot-project-setup` skill and provides a complete director
 ### Gemini CLI
 
 ```bash
-gemini extensions install https://github.com/jame581/GodotPrompter
+gemini extensions install https://github.com/0999312/GodotPrompter
 ```
 
 ### GitHub Copilot CLI
 
 ```bash
-copilot plugin marketplace add jame581/skillsmith
-copilot plugin install godot-prompter@skillsmith
+# Clone the fork
+git clone https://github.com/0999312/GodotPrompter.git
+
+# Add local marketplace and install
+copilot plugin marketplace add ./GodotPrompter
+copilot plugin install godot-prompter@godot-prompter
 ```
 
 ### Cursor
@@ -66,7 +71,7 @@ Or clone and place in your project — Cursor reads `.cursor-plugin/plugin.json`
 ### Codex
 
 ```bash
-git clone https://github.com/jame581/GodotPrompter.git ~/.codex/godot-prompter
+git clone https://github.com/0999312/GodotPrompter.git ~/.codex/godot-prompter
 mkdir -p ~/.agents/skills
 ln -s ~/.codex/godot-prompter/skills ~/.agents/skills/godot-prompter
 ```
@@ -79,7 +84,7 @@ Add to `opencode.json`:
 
 ```json
 {
-  "plugin": ["godot-prompter@git+https://github.com/jame581/GodotPrompter.git"]
+  "plugin": ["godot-prompter@git+https://github.com/0999312/GodotPrompter.git"]
 }
 ```
 
@@ -129,14 +134,14 @@ GodotPrompter includes 3 specialized agents:
 
 | Platform | Status | Install |
 |----------|--------|---------|
-| Claude Code | Primary | `claude plugins marketplace add jame581/skillsmith` |
-| Gemini CLI | Supported | `gemini extensions install https://github.com/jame581/GodotPrompter` |
-| GitHub Copilot CLI | Supported | `copilot plugin marketplace add jame581/skillsmith` |
+| Claude Code | Primary | Clone + local install (`claude plugins marketplace add ./GodotPrompter`) |
+| Gemini CLI | Supported | `gemini extensions install https://github.com/0999312/GodotPrompter` |
+| GitHub Copilot CLI | Supported | Clone + local install |
 | Cursor | Supported | `/add-plugin godot-prompter` or clone with `.cursor-plugin/` |
 | Codex | Supported | Clone + symlink (see `.codex/INSTALL.md`) |
 | OpenCode | Supported | Add to `opencode.json` (see `.opencode/INSTALL.md`) |
 
-> **Legacy marketplace:** The [`godot-prompter-marketplace`](https://github.com/jame581/godot-prompter-marketplace) repo remains online so existing installs keep receiving updates, but new users should install from [`skillsmith`](https://github.com/jame581/skillsmith).
+> This is a **fork** of [`jame581/GodotPrompter`](https://github.com/jame581/GodotPrompter). The original remains the canonical upstream. This fork is maintained independently at [`0999312/GodotPrompter`](https://github.com/0999312/GodotPrompter).
 
 ## Available Skills
 
@@ -254,6 +259,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for how to add new skills, conventions, a
 
 ## Author
 
-* **Jan Mesarč** - *Creator* - [janmesarc.online/](https://janmesarc.online/)
+* **0999312** - *Fork maintainer* - [github.com/0999312](https://github.com/0999312)
 
-Do you like this project and want to support me? Great! I really appreciate it and it makes me very happy if you [Buy Me A Coffee](https://www.buymeacoffee.com/jame581).
+### Original Creator
+
+* **Jan Mesarč** - *Original creator* - [janmesarc.online/](https://janmesarc.online/) — [Buy Me A Coffee](https://www.buymeacoffee.com/jame581)
+
+This project is a fork of the [original GodotPrompter](https://github.com/jame581/GodotPrompter) by Jan Mesarč, distributed under the MIT license.

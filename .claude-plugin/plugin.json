@@ -3,10 +3,17 @@
   "description": "Agentic skills framework for Godot 4.x game development — 44 domain-specific skills for GDScript and C#",
   "version": "1.4.1",
   "author": {
-    "name": "Jan Mesarc"
+    "name": "0999312",
+    "url": "https://github.com/0999312"
   },
-  "homepage": "https://github.com/jame581/GodotPrompter",
-  "repository": "https://github.com/jame581/GodotPrompter",
+  "contributors": [
+    {
+      "name": "Jan Mesarč",
+      "url": "https://github.com/jame581"
+    }
+  ],
+  "homepage": "https://github.com/0999312/GodotPrompter",
+  "repository": "https://github.com/0999312/GodotPrompter",
   "license": "MIT",
   "keywords": [
     "godot",

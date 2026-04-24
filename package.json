@@ -4,7 +4,10 @@
   "type": "module",
   "main": ".opencode/plugins/godot-prompter.js",
   "description": "Agentic skills framework for Godot 4.x game development — GDScript & C#",
-  "author": "jame581",
+  "author": "0999312",
+  "contributors": [
+    "Jan Mesarč (jame581) — original creator"
+  ],
   "license": "MIT",
   "keywords": [
     "godot",
@@ -19,6 +22,6 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/jame581/GodotPrompter.git"
+    "url": "https://github.com/0999312/GodotPrompter.git"
   }
 }

@@ -2,5 +2,18 @@
   "name": "godot-prompter",
   "description": "Agentic skills framework for Godot 4.x — 44 domain-specific skills for GDScript and C#",
   "version": "1.4.1",
+  "author": {
+    "name": "0999312"
+  },
+  "homepage": "https://github.com/0999312/GodotPrompter",
+  "license": "MIT",
+  "keywords": [
+    "godot",
+    "godot-4",
+    "gdscript",
+    "csharp",
+    "gamedev",
+    "skills"
+  ],
   "contextFileName": "GEMINI.md"
 }

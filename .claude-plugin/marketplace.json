@@ -1,7 +1,8 @@
 {
   "name": "godot-prompter-marketplace",
   "owner": {
-    "name": "Jan Mesarc"
+    "name": "0999312",
+    "url": "https://github.com/0999312"
   },
   "plugins": [
     {
@@ -10,8 +11,14 @@
       "version": "1.4.1",
       "source": "./",
       "author": {
-        "name": "Jan Mesarc"
-      }
+        "name": "0999312"
+      },
+      "contributors": [
+        {
+          "name": "Jan Mesarč",
+          "url": "https://github.com/jame581"
+        }
+      ]
     }
   ]
 }

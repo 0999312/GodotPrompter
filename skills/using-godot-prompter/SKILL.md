@@ -79,7 +79,7 @@ GodotPrompter provides 3 specialized agents (use via the Agent tool):
 - **godot-code-reviewer** — Reviews code against Godot best practices
 
 ### Plan Storage
-Implementation plans and design docs are saved to `docs/godot-prompter/plans/` and `docs/godot-prompter/specs/` in the user's project.
+Implementation plans and design docs are saved to `docs/superpowers/plans/` and `docs/superpowers/specs/` in the user's project.
 
 ## Platform Adaptation
 
