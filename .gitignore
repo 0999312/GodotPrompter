@@ -18,5 +18,8 @@ export_presets.cfg
 # Build
 node_modules/
 
+# Local plugin analysis (not committed — used for addon discovery only)
+addons/
+
 # tests/plugin-test
 .claude/
