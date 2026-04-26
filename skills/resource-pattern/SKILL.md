@@ -1,6 +1,10 @@
 ---
 name: resource-pattern
 description: Use when creating data containers in Godot — custom Resources for configuration, items, stats, and editor integration
+godot_version: "4.3+"
+status: stable
+last_validated: "2026-04-27"
+agent_tested_on: ["claude-4-5-opus", "deepseek-v4-flash"]
 ---
 
 # Resource Pattern in Godot 4.3+
@@ -8,6 +12,44 @@ description: Use when creating data containers in Godot — custom Resources for
 Resources are Godot's built-in data containers. Use them for configuration, item definitions, character stats, and any data that lives outside the scene tree. All examples target Godot 4.3+ with no deprecated APIs.
 
 > **Related skills:** **inventory-system** for Resource-based item definitions, **save-load** for Resource serialization, **component-system** for data-driven component configuration.
+>
+> **Addon Override:** `pandora` provides partial Resource-based item/stat definitions. `mc_game_framework` provides Registry + ResourceLocation for runtime data management — see `docs/ADDON_REGISTRY.md`.
+>
+> **Interface Contract:** When co-loaded with `component-system`, use Resources for configuration data (stats, abilities) and let component nodes own runtime state. When co-loaded with `save-load`, Resources serialized with `ResourceSaver`/`ResourceLoader` are the primary save data format — do NOT mix JSON and Resource formats within the same save file.
+
+---
+
+## Success Criteria
+
+When implementing custom Resources, the result MUST satisfy:
+
+1. **All exported fields are typed**: Every `@export` field has an explicit `: Type` — no `@export var name` without type annotation
+   - **GUT test**: Code inspection — grep for `@export var \w+(\s*=\s*.*)?$` without `: Type` — flag if found
+2. **Shared vs unique distinguishing**: Read-only data uses shared Resources (loaded once); per-instance mutable data calls `duplicate()` or `make_unique()` in `_ready()`
+   - **GUT test**: Code inspection — for each `@export var resource_field: ResourceSubclass`, verify either it is never mutated OR `duplicate()` is called before mutation
+3. **C# GlobalClass attribute**: All C# Resource subclasses have `[GlobalClass]` attribute
+   - **GUT test**: Code inspection — grep for `partial class.*Resource` without `[GlobalClass]` above it — flag if found
+4. **No game logic in Resources**: Resources contain only data fields and minimal validation helpers — no `_process()`, `_physics_process()`, or scene tree queries
+   - **GUT test**: Code inspection — grep for `_process\|_physics_process\|get_tree\|get_node` inside files that `extends Resource` — flag if found
+
+---
+
+## Decision Points
+
+**🛑 Pause and ask the user before proceeding:**
+
+1. **Shared vs per-instance**: "Should this Resource be shared across all instances (read-only definitions) or unique per instance (mutable state)?"
+   - Options: shared (loaded once, used by all, no `duplicate()`), per-instance (each entity gets its own copy via `duplicate()`)
+   - Recommend: shared for item definitions/blueprints; per-instance for character stats/ability cooldowns
+2. **File format**: "Should the Resource use `.tres` (text) or `.res` (binary) format?"
+   - Options: `.tres` (human-readable, version-control friendly, slower for large data), `.res` (compact, faster, binary)
+   - Recommend: `.tres` during development; `.res` only for shipped production assets
+3. **Resource granularity**: "Should related data be one large Resource or multiple small focused ones?"
+   - Options: monolithic (one Resource with all fields, simpler file management), focused (one Resource per concern, modular)
+   - Recommend: focused for maintainability; monolithic only for very tightly coupled data (<5 fields)
+4. **Resource ↔ Node boundary**: "Should this data live in a Resource or on a Node?"
+   - Options: Resource (data-only, survives scene changes, editor-visible), Node (has behavior, runs per-frame, tree-dependent)
+   - Recommend: Resource for static/configuration data; Node for anything with `_process()` or scene queries
 
 ---
 
@@ -538,7 +580,51 @@ extends Resource
 
 ---
 
-## 11. Checklist
+## N. Common Agent Mistakes
+
+| # | Mistake | Why it's wrong | Correct approach |
+|---|---------|---------------|------------------|
+| 1 | Forgetting `class_name` on Resource subclass | Godot cannot find the class for *New Resource* in the editor; cannot use it in Inspector `@export` fields | Always add `class_name MyResource` above `extends Resource` |
+| 2 | Forgetting `[GlobalClass]` on C# Resource subclass | C# Resource is invisible to the editor; cannot create `.tres` files from it | Add `[GlobalClass]` attribute above `public partial class` |
+| 3 | Mutating a shared Resource through one instance | Changes affect ALL instances sharing that Resource — item stats change globally, enemy configs corrupt | If the Resource needs per-instance mutable state, call `duplicate()` in `_ready()` before writing to it |
+| 4 | Adding `_process()` or `_physics_process()` to a Resource | Resources are data objects; they are NOT in the scene tree and do not receive lifecycle callbacks | Keep all game logic in Node scripts; Resources contain only data + validation helpers |
+| 5 | Using `@export var` without a type annotation | Exported variable defaults to Variant; Inspector shows no type hint; type safety lost | Always annotate: `@export var health: int = 100` |
+| 6 | Not checking `ResourceSaver.save()` return code | Silently failing to save can lose player progress or configuration changes with no feedback | Check the return value: `var err := ResourceSaver.save(resource, path); if err != OK: push_error("Failed to save: %s" % err)` |
+| 7 | Loading `.tres`/`.res` from user-provided paths without validation | Arbitrary file read vulnerability; loading a malicious Resource could expose internal game state | Only load from predetermined paths inside `res://`; never from `user://` or external input |
+
+## N+1. Addon Override
+
+When the project has relevant addons:
+
+| Addon | Coverage Type | Usage Guidance |
+|-------|--------------|----------------|
+| `pandora` | Partial (item/stat definitions) | Use Pandora's Resource-based definition system for items and stats; use skill patterns for custom Resource subclasses and configuration-only Resources |
+| `mc_game_framework` | Complementary | Use framework's `ResourceLocation` + `RegistryBase` for runtime data lookups and registration; use skill patterns for defining custom Resource classes with Inspector editor support |
+
+**Usage**: `mc_game_framework` handles *runtime* data management (registry CRUD, `namespace:path` identification). This skill handles *editor-time* Resource class definition (`class_name`, `@export`, Inspector editing). Both work together — define Resources with this skill, register/manage them with the framework.
+
+## N+2. Self-Verification
+
+After generating code, run this verification loop. Fix any failures before reporting completion.
+
+### Automated checks (agent runs without user)
+
+- [ ] **Class name scan**: For every `extends Resource` file, verify `class_name` exists (or `[GlobalClass]` in C#)
+- [ ] **Export type scan**: Grep for `@export var \w+(\s*=.*)?$` without `: Type` — flag if found
+- [ ] **Game logic scan**: Grep for `_process\|_physics_process\|get_tree\|get_node` inside files that `extends Resource` — flag if found
+
+### Manual checks (agent reviews code, reports to user)
+
+- [ ] **Shared vs unique audit**: For each Resource referenced by multiple entities, verify it is either read-only or `duplicate()`-d before mutation
+- [ ] **Save error handling audit**: For every `ResourceSaver.save()` call, verify the return value is checked
+
+### Behavioral checks (user must test in Godot)
+
+- [ ] **GUT test**: Generate a test that creates a Resource, saves it, loads it, and verifies field integrity
+  - Run: `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/skill_verification -gprefix=resource -gexit`
+- [ ] **Play test**: Open the game, verify Resources created in the editor appear correctly at runtime; modify a shared Resource and verify changes appear (or don't, per design)
+
+## N+3. Implementation Checklist
 
 - [ ] Resource subclass uses `class_name` so the editor can find it for **New Resource**
 - [ ] C# classes have `[GlobalClass]` attribute
@@ -552,3 +638,5 @@ extends Resource
 - [ ] `.tres` used during development; `.res` considered for shipped production data
 - [ ] `ResourceSaver.save()` return value checked and errors reported with `push_error()`
 - [ ] `.tres` / `.res` files never loaded from untrusted external sources
+- [ ] **New**: Self-Verification loop completed (see section above)
+- [ ] **New**: Addon presence checked and user consulted (Step 0.5)

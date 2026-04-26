@@ -7,6 +7,23 @@ description: Bootstrap skill — establishes how to find and use GodotPrompter s
 
 GodotPrompter provides Godot 4.x domain-specific skills for AI coding agents. Skills cover project setup, architecture patterns, gameplay systems, UI, multiplayer, testing, and deployment — for both GDScript and C#.
 
+## Addon Registry
+
+Godot addon → skill domain mappings are maintained in `docs/ADDON_REGISTRY.md`. When the agent discovers an addon, it references this registry to decide whether to use addon-native APIs or skill-based patterns.
+
+## Self-Verification Protocol
+
+All v2 skills include a `## Self-Verification` section with automated, manual, and behavioral checks. The agent runs these checks after every code generation step. See `docs/SELF_VERIFICATION_GUIDE.md` for the full protocol.
+
+## Skill Template v2
+
+New skills MUST follow the v2 template at `docs/SKILL_TEMPLATE_v2.md`, which adds:
+- **Success Criteria**: Declarative, verifiable goals
+- **Decision Points**: Architecture choices requiring user input
+- **Common Agent Mistakes**: Domain-specific antipatterns
+- **Addon Override**: Addon interaction rules
+- **Self-Verification**: Automated verification loop
+
 ## How to Access Skills
 
 **In Claude Code:** Use the `Skill` tool with the skill name (e.g., `Skill: "godot-prompter:state-machine"`).
@@ -54,6 +71,18 @@ This is not optional. Workflow plugins handle HOW you work. GodotPrompter handle
 
 GodotPrompter handles the full development workflow. No other plugins required.
 
+### 0. Requirement Validation
+Before anything else, the agent checks if the task is clearly defined:
+- Clear goal → proceed
+- Ambiguous → presents 2-4 approach options with trade-offs, user picks one
+- Still vague → agent proposes the standard approach and proceeds
+
+### 0.5. Addon Discovery
+The agent scans the project's `addons/` directory and matches against `docs/ADDON_REGISTRY.md`:
+- Installed addon covers the feature domain? → ask user: "Use addon or generic patterns?"
+- Two addons conflict? → present both, user chooses
+- No relevant addon? → proceed with skill-based implementation
+
 ### 1. Design Phase
 Load `godot-prompter:godot-brainstorming` — it guides you through:
 - Asking clarifying questions about the game/system
@@ -69,7 +98,14 @@ For each task in the plan, load the relevant domain skill:
 
 Each skill provides complete code examples, Godot best practices, and a checklist.
 
-### 3. Review Phase
+### 3. Self-Verification
+After implementing, the agent runs the skill's Self-Verification loop:
+- Generates GUT tests from Success Criteria
+- Runs `godot --headless` to execute tests
+- Fixes failures and re-runs (max 5 loops)
+- Reports results
+
+### 4. Review Phase
 Load `godot-prompter:godot-code-review` to review the code against Godot-specific checklists.
 
 ### Agents

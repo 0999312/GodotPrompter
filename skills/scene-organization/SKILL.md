@@ -1,6 +1,10 @@
 ---
 name: scene-organization
 description: Use when designing scene tree structure — composition vs inheritance, when to split scenes, node hierarchy patterns
+godot_version: "4.3+"
+status: stable
+last_validated: "2026-04-27"
+agent_tested_on: ["claude-4-5-opus", "deepseek-v4-flash"]
 ---
 
 # Scene Organization
@@ -8,6 +12,44 @@ description: Use when designing scene tree structure — composition vs inherita
 A guide for structuring Godot 4.3+ scene trees: when to split, when to compose, and how nodes should communicate.
 
 > **Related skills:** **component-system** for composition patterns, **event-bus** for decoupled communication, **godot-brainstorming** for scene tree planning, **2d-essentials** for TileMapLayer and CanvasLayer organization.
+>
+> **Addon Override:** No known addon fully replaces scene organization patterns. Some addons provide visual scene management — see `docs/ADDON_REGISTRY.md`.
+>
+> **Interface Contract:** When co-loaded with `component-system`, use composition for reusable behavior (HealthComponent, HitboxComponent) and inheritance only for structural variants (Orc → Goblin). When co-loaded with `event-bus`, define signal direction: child signals travel up, method calls travel down, EventBus travels sideways.
+
+---
+
+## Success Criteria
+
+When organizing scene structure, the result MUST satisfy:
+
+1. **Single responsibility**: Every scene can be described in two words or fewer — if it cannot, it needs splitting
+   - **GUT test**: Code inspection — verify each `.tscn` file has a clear, single purpose
+2. **No get_parent() chains**: No code uses `get_parent()` more than once consecutively (no `get_parent().get_parent(...)`)
+   - **GUT test**: Grep for `get_parent()\.get_parent` — flag if found
+3. **No hardcoded absolute paths**: No `get_node("/root/...")` or `get_node("../../...")` paths outside the node's own subtree
+   - **GUT test**: Grep for `get_node\("/root` and `get_parent\(\)\.get_node\(` — flag if found
+4. **Composition over inheritance**: Reusable components are separate `.tscn` files; inheritance is used only for structural variants
+   - **GUT test**: Code inspection — verify each `extends` chain is shallow (<3 levels) unless structurally justified
+
+---
+
+## Decision Points
+
+**🛑 Pause and ask the user before proceeding:**
+
+1. **Scene splitting**: "Should this group of nodes be a separate scene, or stay in the parent?"
+   - Options: split (if reused elsewhere, exceeds ~15 nodes, or benefits from independent editing), keep (tightly coupled, single-use, small)
+   - Recommend: split when you would use it in >1 place; keep when splitting would require >3 signals to reconnect
+2. **Composition vs inheritance**: "Should entities share behavior via composition or inheritance?"
+   - Options: composition (component nodes, mix-and-match, more flexible), inheritance (extends child scenes, simpler for structural variants)
+   - Recommend: composition for behavior (health, damage, movement); inheritance for structural variants of the same entity type
+3. **Node grouping strategy**: "How should nodes be organized within a scene?"
+   - Options: by function (Visuals, Collision, Components, AI containers), flat (all children directly under root)
+   - Recommend: group by function using plain Node containers for scenes with >5 children
+4. **Signal direction pattern**: "Should signals travel up (child→parent) or should the parent directly observe children?"
+   - Options: signals up + methods down (standard pattern), bidirectional signals (parents listen to children AND emit to children)
+   - Recommend: signals up + methods down — it is the clearest and most maintainable pattern
 
 ---
 
@@ -188,6 +230,29 @@ $HealthComponent.take_damage(10)
 $AnimationPlayer.play("hurt")
 ```
 
+### Unique Node IDs (Godot 4.6+)
+
+Since Godot 4.6, every node has a **persistent unique internal ID** that remains stable across renames and scene tree reorganizations.
+
+```gdscript
+# Get the unique ID of a node (persists across renames)
+var node_id: int = $MyNode.node_id
+```
+
+**What this means for refactoring:**
+
+- Renaming a node no longer breaks references in inherited or instantiated scenes
+- Moving nodes within the scene tree preserves their identity
+- Unique IDs are saved in `.tscn` files — scenes must be re-saved in 4.6 to benefit
+
+**To upgrade existing projects:**
+
+```
+Project → Tools → Upgrade Project Files
+```
+
+This re-saves all scenes with the new node ID data. After upgrading, refactoring becomes significantly safer.
+
 ### EventBus travels sideways (peer → peer)
 
 For communication between scenes that have no ancestor–descendant relationship — e.g., an enemy notifying the HUD — use an Autoload event bus. Emitting on the bus decouples sender from receiver entirely.
@@ -262,7 +327,51 @@ The level scene is a composition root — it owns the layout and spawns instance
 
 ---
 
-## 6. Checklist
+## N. Common Agent Mistakes
+
+| # | Mistake | Why it's wrong | Correct approach |
+|---|---------|---------------|------------------|
+| 1 | Using `get_parent().get_parent()` to access an ancestor | Breaks when the scene tree changes; causes runtime null errors in unrelated code changes | Use signals (child→parent) or an EventBus (peer→peer); never traverse up more than one level |
+| 2 | Hard-coding absolute node paths like `get_node("/root/Main/Player")` | Path breaks if the root scene changes name or structure; no compile-time validation | Use groups (`add_to_group("player")` + `get_tree().get_first_node_in_group("player")`) or exported NodePath |
+| 3 | Putting everything in one monolithic scene | Scene becomes difficult to navigate, edit, and version; merge conflicts are frequent | Split into sub-scenes at ~15 nodes; each sub-scene has a single responsibility |
+| 4 | Using inheritance when composition would be better | Deep `extends` chains make it hard to mix behaviors across unrelated entity types | Use components (HealthComponent, HitboxComponent) as child nodes; use inheritance only for structural variants (Orc → Goblin) |
+| 5 | Mixing logic-heavy nodes directly as root children | The root scene becomes a dumping ground for unrelated logic; hard to test or reuse individual systems | Group by concern using plain `Node` containers: `Visuals/`, `Components/`, `AI/` |
+| 6 | Not using `%` unique names for editor-placed nodes | Renaming a node breaks all `$Path` references to it; fragile refactoring | Use `%UniqueName` (`%Sprite2D`) for nodes that are pre-placed in the scene — they survive renames |
+| 7 | Using `%` unique names for runtime-instantiated nodes | `%` only works for nodes in the `.tscn` file; instantiated sub-scenes' nodes are not in the unique name scope | Use `$` relative path inside instantiated sub-scenes, or export a `NodePath` that the parent sets after instantiation |
+
+## N+1. Addon Override
+
+When the project has relevant addons:
+
+| Addon | Coverage Type | Usage Guidance |
+|-------|--------------|----------------|
+| `orchestrator` | Complementary | Visual node wiring and composition for designer-facing workflows; scene organization patterns still apply for hand-coded logic |
+
+No known addon replaces scene organization fundamentals. `orchestrator` provides visual composition but does not eliminate the need for clear scene boundaries.
+
+## N+2. Self-Verification
+
+After generating code, run this verification loop. Fix any failures before reporting completion.
+
+### Automated checks (agent runs without user)
+
+- [ ] **Parent chain scan**: Grep for `get_parent()\.get_parent` — flag if found
+- [ ] **Absolute path scan**: Grep for `get_node\("/root` and `get_parent\(\)\.get_node\(` — flag if found
+- [ ] **Unique name scan**: For files that instantiate sub-scenes at runtime, grep for `%` node access — flag as potential runtime error
+
+### Manual checks (agent reviews code, reports to user)
+
+- [ ] **Scene responsibility audit**: Review each `.tscn` file — can you describe it in two words? If not, suggest splitting
+- [ ] **Composition vs inheritance audit**: Review each `extends` chain — is inheritance structural (OK) or behavioral (favor composition)?
+- [ ] **Node grouping audit**: For scenes with >5 children, verify they are grouped by concern into named container nodes
+
+### Behavioral checks (user must test in Godot)
+
+- [ ] **GUT test**: Generate a test that verifies node references resolve correctly after scene tree changes (rename a node, re-parent — do references still work?)
+  - Run: `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/skill_verification -gprefix=scene -gexit`
+- [ ] **Play test**: Open the game; verify all scenes load without errors; verify UI stays attached to correct elements after scene transitions
+
+## N+3. Implementation Checklist
 
 - [ ] Each scene has exactly one responsibility, named in two words or fewer
 - [ ] Reusable components (`HealthComponent`, `StateMachine`, etc.) are separate `.tscn` files
@@ -271,3 +380,6 @@ The level scene is a composition root — it owns the layout and spawns instance
 - [ ] Peer-to-peer communication uses an EventBus Autoload, not `get_parent()` chains
 - [ ] No `get_parent().get_parent()` or `get_node("../../SomeNode")` paths in code
 - [ ] Nodes are grouped into logical containers (`Visuals`, `Components`, `AI`, etc.) for readability
+- [ ] **New**: `%` unique names used for pre-placed nodes; `$` paths used for runtime-instantiated nodes
+- [ ] **New**: Self-Verification loop completed (see section above)
+- [ ] **New**: Addon presence checked and user consulted (Step 0.5)

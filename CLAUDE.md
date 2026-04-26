@@ -31,6 +31,16 @@ GodotPrompter is an open-source agentic skills framework for Godot 4.x game deve
 - Include both GDScript and C# examples where applicable
 - Test skills against real Godot projects before merging
 
+## Documentation Files
+
+Key documents:
+
+- `docs/SKILL_TEMPLATE_v2.md` — Required template for all new skills
+- `docs/ADDON_REGISTRY.md` — Addon → skill domain coverage mapping
+- `docs/SELF_VERIFICATION_GUIDE.md` — Full-depth self-verification protocol
+- `docs/IMPROVEMENT_PLAN_v1.5.md` — Current improvement plan
+- `docs/usage-specification.md` — External project integration guide
+
 ## Repository Structure
 
 ```
@@ -61,15 +71,25 @@ Every skill must start with YAML frontmatter:
 ---
 name: skill-name
 description: Use when [trigger] — [brief scope]
+godot_version: "4.3+"
+status: stable          # stable | beta | draft
+last_validated: "YYYY-MM-DD"
+agent_tested_on: ["model-a", "model-b"]
 ---
 ```
 
 Followed by:
 1. Title and intro
-2. Related skills line: `> **Related skills:** **skill-a** for X, **skill-b** for Y.`
-3. Numbered sections with patterns and examples
-4. GDScript first, then C# equivalent (use `gdscript` and `csharp` language tags)
-5. Implementation checklist at the end
+2. Related skills line + Addon Override line + Interface Contract line
+3. **Success Criteria** — 3-6 verifiable criteria (declarative goals)
+4. **Decision Points** — Architecture choices requiring user input
+5. Numbered sections with patterns and examples
+6. **Common Agent Mistakes** — Domain-specific antipatterns table
+7. **Addon Override** — section for known addon interactions
+8. **Self-Verification** — automated + manual + behavioral checks
+9. **Implementation checklist** at the end
+
+New skills MUST follow the v2 template (`docs/SKILL_TEMPLATE_v2.md`). Existing skills SHOULD migrate when updated.
 
 ## Agent Format
 
@@ -83,6 +103,15 @@ description: |
 model: inherit
 ---
 ```
+
+## Addon Registry
+
+Addon → skill domain mappings are maintained in `docs/ADDON_REGISTRY.md`. When adding a new addon entry:
+
+1. Verify the addon works with Godot 4.3+
+2. Classify coverage: Full / Partial / Complementary
+3. Document the activation API
+4. Note conflicts with other addons
 
 ## Version Management
 

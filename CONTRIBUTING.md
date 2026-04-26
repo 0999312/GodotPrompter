@@ -2,19 +2,21 @@
 
 Thanks for your interest in contributing! GodotPrompter is an open-source skills framework for Godot 4.x. Please review our [Code of Conduct](CODE_OF_CONDUCT.md) before participating. Here's how to add skills and improve existing ones.
 
+**All new skills MUST follow the v2 template.** See `docs/SKILL_TEMPLATE_v2.md` for the complete specification. Existing skills SHOULD migrate to the v2 template when updated (see Migration Checklist below).
+
 ## Adding a New Skill
 
 ### 1. Create the skill folder
 
 ```
 skills/<skill-name>/
-  SKILL.md          # Required — main skill document
+  SKILL.md          # Required — main skill document (v2 template)
   *.md              # Optional — supporting references
 ```
 
 Use **kebab-case** for folder names (e.g., `my-new-skill`).
 
-### 2. Write SKILL.md with frontmatter
+### 2. Write SKILL.md with frontmatter (v2 required)
 
 Every `SKILL.md` must start with YAML frontmatter:
 
@@ -22,21 +24,32 @@ Every `SKILL.md` must start with YAML frontmatter:
 ---
 name: my-new-skill
 description: Use when [specific trigger] — [brief scope]
+godot_version: "4.3+"                  # minimum target Godot version
+status: stable                          # stable | beta | draft
+last_validated: "2026-04-27"            # date of last real-world verification
+agent_tested_on: ["claude-4-5-opus"]    # models tested against
 ---
 ```
 
 - `name` must match the folder name
 - `description` should start with "Use when" to help agents decide when to load it
+- `godot_version`, `status`, `last_validated`, `agent_tested_on` are required
 
-### 3. Structure your content
+### 3. Structure your content (v2 template)
 
-Follow this general structure:
+Follow the v2 template structure:
 
 1. **Title and intro** — What this skill covers, when to use it
-2. **Related skills** — `> **Related skills:** **skill-a** for X, **skill-b** for Y.`
-3. **Numbered sections** — Each major concept or pattern
-4. **Code examples** — GDScript first, then C# equivalent
-5. **Checklist** — Implementation checklist at the end
+2. **Related skills** + **Addon Override** + **Interface Contract** lines
+3. **Success Criteria** — 3-6 verifiable criteria (declarative goals)
+4. **Decision Points** — Architecture choices requiring user input
+5. **Numbered sections** — Each major concept or pattern with code examples
+6. **Common Agent Mistakes** — Domain-specific antipatterns table
+7. **Addon Override** — Section for known addon interactions
+8. **Self-Verification** — Automated + manual + behavioral checks
+9. **Implementation Checklist** — Final confirmation
+
+See `docs/SKILL_TEMPLATE_v2.md` for the complete template with all sections.
 
 ### 4. Code examples
 
@@ -52,9 +65,13 @@ Add a related skills line after the intro paragraph:
 
 ```markdown
 > **Related skills:** **event-bus** for decoupled communication, **component-system** for composition patterns.
+>
+> **Addon Override:** `addon-name` provides full/partial coverage — see `docs/ADDON_REGISTRY.md`.
+>
+> **Interface Contract:** When co-loaded with `skill-a`, delegate [X] to skill-a.
 ```
 
-Keep to 3-5 references max. Only link genuinely related skills.
+Keep to 3-5 skill references max. Only link genuinely related skills. Remove addon/interface lines if not applicable.
 
 ## Improving Existing Skills
 
@@ -72,6 +89,18 @@ Before submitting:
 2. **Try the code** — Open Godot 4.3+ and verify examples compile and run
 3. **Check C# parity** — Every GDScript example should have a C# equivalent (unless language-specific)
 4. **Verify cross-refs** — Referenced skills must exist
+5. **Verify Success Criteria** — Each criterion should be verifiable (GUT test or deterministic inspection)
+6. **Verify Common Mistakes** — Each mistake should be a real error an AI agent could make, not generic advice
+
+### Addon Registry Contributions
+
+When adding a new addon to `docs/ADDON_REGISTRY.md`:
+
+1. Verify the addon works with Godot 4.3+
+2. Classify coverage type: Full / Partial / Complementary
+3. Document the activation API (how the agent calls the addon)
+4. Note any conflicts with other addons
+5. Add the addon to related skill's frontmatter `agent_tested_on` if integration was verified
 
 ## Adding Agents
 
@@ -131,6 +160,32 @@ cd /path/to/GodotPrompter && git pull     # pull latest fork changes
 - Target Godot 4.3+ minimum
 - YAML frontmatter is required on every SKILL.md
 
+## Migration Checklist (Existing Skills to v2 Template)
+
+When updating an existing skill to the v2 template:
+
+- [ ] Add `godot_version`, `status`, `last_validated`, `agent_tested_on` to frontmatter
+- [ ] Add `## Success Criteria` — 3-6 verifiable criteria with GUT test references
+- [ ] Add `## Decision Points` — 1-3 architecture decisions requiring user input
+- [ ] Move existing anti-patterns into `## Common Agent Mistakes` table format
+- [ ] Add `## Addon Override` if any known addon covers this domain
+- [ ] Add `## Self-Verification` with automated/manual/behavioral checks
+- [ ] Add/update `## Implementation Checklist`
+- [ ] Add `Addon Override:` and `Interface Contract:` lines below Related skills
+- [ ] Verify code examples still compile on Godot 4.3+
+
+## Full-Depth Self-Verification
+
+When a skill includes GUT test generation in its Self-Verification, the test must:
+
+1. Be placed at `res://tests/skill_verification/<skill>-<criterion>.gd`
+2. Use `extends GutTest`
+3. Cover each Success Criterion with at least one `assert_*` call
+4. Be runnable via `godot --headless` with GUT CLI
+5. Be left in the project after passing (not deleted)
+
+See `docs/SELF_VERIFICATION_GUIDE.md` for the complete protocol.
+
 ## Questions?
 
-Open an issue on GitHub or check existing skills for examples of the expected format.
+Open an issue on GitHub or check `docs/SKILL_TEMPLATE_v2.md` for the complete template reference.

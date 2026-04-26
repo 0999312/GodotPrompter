@@ -1,6 +1,10 @@
 ---
 name: godot-code-review
 description: Use when reviewing GDScript or C# Godot code — checklist of best practices, common anti-patterns, and Godot-specific pitfalls
+godot_version: "4.3+"
+status: stable
+last_validated: "2026-04-27"
+agent_tested_on: ["claude-4-5-opus", "deepseek-v4-flash"]
 ---
 
 # Godot Code Review
@@ -8,6 +12,41 @@ description: Use when reviewing GDScript or C# Godot code — checklist of best 
 A structured review guide for Godot 4.3+ projects covering GDScript and C#. Work through each checklist section, then produce a review summary using the output template at the end.
 
 > **Related skills:** **godot-testing** for TDD and test coverage, **scene-organization** for scene tree best practices, **godot-optimization** for performance review.
+>
+> **Addon Override:** No known addon replaces code review. Some addons provide linting (e.g., `vala`) — use alongside skill patterns.
+>
+> **Interface Contract:** When co-loaded with `godot-testing`, verify that review findings are covered by existing tests; flag findings without test coverage. When co-loaded with `scene-organization`, cross-check scene tree structure against review checklist.
+
+---
+
+## Success Criteria
+
+When conducting a code review, the review MUST:
+
+1. **Catalog all critical issues**: Every issue that will cause a crash, data loss, or security vulnerability is identified and marked as Critical
+   - **Verify by**: After review, the reviewed party confirms no critical bugs were missed
+2. **Verify against checklists**: Every checklist item in this skill is explicitly checked (pass or fail) — no skipped sections
+   - **Verify by**: The review output has a completed checklist section with every item addressed
+3. **Provide concrete fixes**: Every issue includes a specific fix suggestion, not just a description of the problem
+   - **Verify by**: Each Critical and Important finding includes a "Fix:" or "Suggested fix:" section
+4. **Categorize by severity**: Issues are ranked Critical > Important > Minor; the reviewed party can prioritize based on severity
+   - **Verify by**: Review output uses the severity categories from the review output format
+
+---
+
+## Decision Points
+
+**🛑 Pause and ask the user before proceeding:**
+
+1. **Review scope**: "Which files or features should I review? The entire project, or a specific feature?"
+   - Options: full project (comprehensive, slower), specific feature (targeted, faster)
+   - Recommend: specific feature for most reviews; full project only for release readiness
+2. **Review depth**: "Should I check for correctness (deep) or style only (shallow)?"
+   - Options: deep (node architecture, signal patterns, performance, security), shallow (style, naming, formatting only)
+   - Recommend: deep for new code; shallow for legacy code not being modified
+3. **Checklist completion**: "Should I complete every checklist item, or focus on specific areas?"
+   - Options: all sections (thorough, standard), selected sections (targeted, when the code only touches specific areas)
+   - Recommend: all sections unless the user explicitly limits scope
 
 ---
 
@@ -436,6 +475,47 @@ private void OnEnemyDied()
     QueueFree(); // safe — deferred until end of frame
 }
 ```
+
+---
+
+## N. Common Agent Mistakes (in code review)
+
+| # | Mistake | Why it's wrong | Correct approach |
+|---|---------|---------------|------------------|
+| 1 | Reviewing without loading the related skill first | Generic Godot knowledge misses skill-specific patterns and antipatterns | Load the domain skill (e.g., `player-controller`, `state-machine`) before reviewing that domain's code |
+| 2 | Telling the user "this is wrong" without providing a fix | The reviewed party must figure out the correct approach themselves; review half-done | Every finding must include a "Suggested fix:" with concrete code |
+| 3 | Skipping sections of the checklist because "the code looks fine" | Checklist sections are designed to catch class-specific issues; skipping them misses domain errors | Complete every checklist section — mark "pass" if no issues found |
+| 4 | Not categorizing severity | The reviewed party cannot prioritize fixes; all issues are treated equally | Use Critical > Important > Minor consistently |
+| 5 | Over-focusing on trivia (trailing spaces, formatting) while missing architecture issues | The review is noisy but not useful; important structural problems get buried | Minor issues go at the end of the review; Critical/Important issues come first |
+| 6 | Not considering the project's specific plugin/addon stack | Recommending patterns that conflict with installed addons | Before reviewing, check `addons/` and `docs/ADDON_REGISTRY.md` for installed plugins |
+
+## N+1. Addon Override
+
+| Addon | Coverage Type | Usage Guidance |
+|-------|--------------|----------------|
+| `vala` | Complementary | Use Vala for automated static analysis; use this skill for structured human-level review |
+
+`vala` handles syntax-level issues automatically. This skill covers architecture, patterns, and Godot-specific pitfalls that linters cannot detect.
+
+## N+2. Self-Verification
+
+After completing a review, run these checks:
+
+### Automated checks (agent runs without user)
+
+- [ ] **Finding coverage**: Verify every finding has a severity label (Critical / Important / Minor)
+- [ ] **Fix suggestion completeness**: For every Critical and Important finding, verify a concrete fix is provided
+- [ ] **Checklist completeness**: Verify every checklist item has at least "pass" or "fail" — no blanks
+
+### Manual checks (agent reviews own output)
+
+- [ ] **Tone audit**: Verify the review is constructive, not dismissive — every "BAD" example is paired with a "GOOD" example
+- [ ] **False positive scan**: Re-read each finding; is there a valid reason the code does what it does? If so, downgrade or remove
+- [ ] **Addon awareness**: Verify the review considered installed addons before making recommendations
+
+### Behavioral checks
+
+- [ ] **Developer confirmation**: After submitting the review, ask "Does the review accurately reflect the code? Any findings you disagree with?"
 
 ---
 

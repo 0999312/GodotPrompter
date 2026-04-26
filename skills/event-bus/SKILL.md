@@ -1,6 +1,10 @@
 ---
 name: event-bus
 description: Use when implementing decoupled communication between nodes — global EventBus autoload with typed signals
+godot_version: "4.3+"
+status: stable
+last_validated: "2026-04-27"
+agent_tested_on: ["claude-4-5-opus", "deepseek-v4-flash"]
 ---
 
 # Event Bus in Godot 4.3+
@@ -8,6 +12,41 @@ description: Use when implementing decoupled communication between nodes — glo
 A global signal hub that lets unrelated nodes communicate without holding references to each other. All examples target Godot 4.3+ with no deprecated APIs.
 
 > **Related skills:** **component-system** for direct signal communication between components, **csharp-signals** for C#-specific signal patterns, **dependency-injection** for alternative decoupling approaches.
+>
+> **Addon Override:** `mc_game_framework` provides a full EventBus replacement (string-based pub/sub + cancellation). Installed `orchestrator` provides visual signal wiring — see `docs/ADDON_REGISTRY.md`.
+>
+> **Interface Contract:** When co-loaded with `component-system`, use EventBus for cross-system events (e.g., `player_died`, `item_collected`) and component-local signals for intra-scene communication (e.g., `health_changed`). When co-loaded with `save-load`, save `EventBus` state is NOT managed by the bus — each listener persists its own state independently.
+
+---
+
+## Success Criteria
+
+When implementing an event bus, the result MUST satisfy:
+
+1. **All signals are typed**: Every signal parameter has an explicit type annotation — no untyped `signal foo(bar)` patterns
+   - **GUT test**: Code inspection — grep for `signal \w+\([^)]*\)` without `: Type` on each parameter
+2. **C# disconnects in _ExitTree**: Every C# consumer that connects in `_Ready()` has a corresponding disconnect in `_ExitTree()`
+   - **GUT test**: Code inspection — for each `+=` in `_Ready()`, verify a corresponding `-=` in `_ExitTree()`
+3. **No circular re-emission**: No signal handler emits the same signal it just received
+   - **GUT test**: Code inspection — grep for `.emit(` inside handlers named `_on_<signal_name>` — flag if same signal
+4. **No over-decoupling**: Direct parent-child communication does NOT use the event bus
+   - **GUT test**: Code inspection — for each `EventBus.<signal>.emit()` call, verify the emitter is NOT the parent or child of the target
+
+---
+
+## Decision Points
+
+**🛑 Pause and ask the user before proceeding:**
+
+1. **Bus or direct signals**: "Should this communication use the global EventBus, or can it use direct signals between nodes?"
+   - Options: EventBus (for unrelated nodes across the tree), direct signals (parent-child, sibling), method calls (tight coupling acceptable)
+   - Recommend: EventBus for UI ↔ gameplay and audio ↔ gameplay; direct signals for parent-child
+2. **Payload format**: "How should structured data be passed through signals — Resource or Dictionary?"
+   - Options: Resource (typed, Inspector-friendly, recommended for >3 fields), Dictionary (quick prototyping, flexible, no compile-time safety)
+   - Recommend: Resource for all data used across multiple signals or scenes; Dictionary only for single-use prototyping
+3. **C# vs GDScript lifecycle**: "Are you using C# or GDScript?"
+   - Options: C# (mandatory `_ExitTree` disconnect), GDScript (reference-counted, explicit disconnect optional)
+   - Recommend: Always disconnect in `_ExitTree` regardless of language, for consistency
 
 ---
 
@@ -509,7 +548,51 @@ func test_hud_updates_score_label() -> void:
 
 ---
 
-## 9. Checklist
+## N. Common Agent Mistakes
+
+| # | Mistake | Why it's wrong | Correct approach |
+|---|---------|---------------|------------------|
+| 1 | Using EventBus for parent-child communication | Unnecessarily indirect; breaks when someone moves the listener; harder to debug than direct calls | For parent querying a child: call the child's method directly. For child notifying parent: use a direct signal. Reserve EventBus for unrelated nodes. |
+| 2 | C# handlers not disconnecting in `_ExitTree()` | Memory leak — EventBus holds a delegate reference to the freed node; next signal emission raises `InvalidOperationException` | Always pair `+=` in `_Ready()` with `-=` in `_ExitTree()` |
+| 3 | Re-emitting the same signal from within its own handler | Infinite loop — EventBus floods with emissions; Godot eventually crashes with stack overflow | Never call `.emit()` for the same signal inside its own handler; update internal state instead |
+| 4 | Using untyped signal parameters (`signal my_event(value)`) | Consumers receive Variant and must guess or cast the actual type; no compile-time safety | Always annotate: `signal my_event(value: int)` |
+| 5 | Forgetting to register EventBus as an autoload | The `EventBus` node doesn't exist at runtime; any `EventBus.signal.connect()` call raises a null reference error | Register in Project → Autoload with name "EventBus" BEFORE writing any connecting code |
+| 6 | Emitting complex data as multiple separate signals instead of one payload | Consumers need to correlate multiple signal receptions to reconstruct the full event; fragile and hard to debug | Use a single signal with a Resource parameter for complex data: `signal combat_hit(data: CombatEventData)` |
+| 7 | Connecting signals every frame (inside `_process()`) | Registrations accumulate infinitely; handlers fire multiple times per emission, degrading performance | All signal connections happen once in `_ready()` — never in `_process()` or `_physics_process()` |
+
+## N+1. Addon Override
+
+When the project has relevant addons:
+
+| Addon | Coverage Type | Usage Guidance |
+|-------|--------------|----------------|
+| `mc_game_framework` | Full replacement | Use framework's EventBus (`EventBus.subscribe()`/`publish()`) instead of typed signal EventBus patterns below. Framework handles autoload registration. |
+| `orchestrator` | Complementary | Visual signal wiring for designer-facing workflows; EventBus still needed for code-driven cross-system events |
+
+**Conflict**: `mc_game_framework` EventBus replaces generic EventBus patterns — do NOT create a separate EventBus autoload if this framework is active. `orchestrator` is complementary and does not conflict.
+
+## N+2. Self-Verification
+
+After generating code, run this verification loop. Fix any failures before reporting completion.
+
+### Automated checks (agent runs without user)
+
+- [ ] **Signal type scan**: Grep for `signal \w+\(([^:)]+)\)` (parameters without type annotations) — flag if found
+- [ ] **C# disconnect scan**: Grep for `\+=` in `_Ready()` — for each match, verify corresponding `-=` exists in `_ExitTree()` of the same file
+- [ ] **Re-emission scan**: Grep for `.emit` inside functions named `_on_` — verify the emitted signal is NOT the same as the function's source signal
+
+### Manual checks (agent reviews code, reports to user)
+
+- [ ] **Over-decoupling audit**: For each `EventBus` connection, verify the emitter and receiver are NOT in a direct parent-child relationship
+- [ ] **Payload format audit**: If a signal has >3 parameters, verify that a Resource payload was considered (not just raw args)
+
+### Behavioral checks (user must test in Godot)
+
+- [ ] **GUT test**: Generate tests using `watch_signals()` to verify critical signals are emitted with correct parameters
+  - Run: `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/skill_verification -gprefix=event_bus -gexit`
+- [ ] **Play test**: Trigger each defined game action (kill enemy, collect item, change level); verify all expected UI, audio, and gameplay reactions occur
+
+## N+3. Implementation Checklist
 
 - [ ] `EventBus` autoload is registered in **Project → Project Settings → Autoload**
 - [ ] All signals use typed parameters (`signal foo(bar: int)`) — no untyped signals
@@ -521,3 +604,5 @@ func test_hud_updates_score_label() -> void:
 - [ ] No event bus signal used where a direct parent-child call or signal is simpler
 - [ ] GUT tests cover both emission (producer) and reception (consumer) for critical signals
 - [ ] C# handlers verified to disconnect in `_ExitTree()` before merging
+- [ ] **New**: Self-Verification loop completed (see section above)
+- [ ] **New**: Addon presence checked and user consulted (Step 0.5)

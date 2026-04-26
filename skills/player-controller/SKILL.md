@@ -1,6 +1,10 @@
 ---
 name: player-controller
 description: Use when implementing player movement — CharacterBody2D/3D patterns, input handling, physics, common movement recipes
+godot_version: "4.3+"
+status: stable
+last_validated: "2026-04-27"
+agent_tested_on: ["claude-4-5-opus", "deepseek-v4-flash"]
 ---
 
 # Player Controllers in Godot 4.3+
@@ -8,6 +12,46 @@ description: Use when implementing player movement — CharacterBody2D/3D patter
 All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first, then C#.
 
 > **Related skills:** **physics-system** for RigidBody, Area, raycasting, and collision shapes, **2d-essentials** for TileMaps, parallax, and 2D lighting, **state-machine** for movement state management, **camera-system** for camera follow and shake, **component-system** for hitbox/hurtbox integration.
+>
+> **Addon Override:** No known addon fully covers player controllers. `orchestrator` covers FSM logic (for movement states) — see `docs/ADDON_REGISTRY.md`.
+>
+> **Interface Contract:** When co-loaded with `state-machine`, delegate velocity computation to state nodes via `StateMachine.physics_update()` — do NOT set velocity directly in `_physics_process()`. When co-loaded with `event-bus`, emit movement events via EventBus instead of direct node references. When co-loaded with `component-system`, use `HealthComponent` for damage and `HitboxComponent` for attacks.
+
+---
+
+## Success Criteria
+
+When implementing a player controller, the result MUST satisfy:
+
+1. **Movement precision**: Player reaches exactly `speed` px/s when input is held; accelerates at defined `acceleration` rate and decelerates at `friction`/`deceleration`
+   - **GUT test**: Hold input direction for 0.5s; assert velocity.length() approximates speed within 1px tolerance
+2. **Jump height (platformers)**: Player's jump peak matches `v²/2g` within 5px
+   - **GUT test**: Record peak Y position after jump; compare with calculated expected peak
+3. **Coyote time (platformers)**: Player can jump within `coyote_time` seconds after leaving platform edge
+   - **GUT test**: Move player off edge at t=0; trigger jump at t=coyote_time-0.01s; assert jump executes
+4. **No wall penetration**: Player cannot move through walls at any speed within the designed range
+   - **GUT test**: Push player against wall at max speed for 60 physics frames; assert position is within 1px of initial collision point
+5. **FPS mouse look**: Vertical look is clamped to ±90°; horizontal look is unbounded
+   - **GUT test**: Simulate mouse motion events; assert head.rotation.x is clamped; assert body.rotation.y is unbounded
+
+---
+
+## Decision Points
+
+**🛑 Pause and ask the user before proceeding:**
+
+1. **Controller type**: "Which controller type does your game need?"
+   - Options: top-down 2D, platformer 2D, first-person 3D, third-person 3D
+   - Recommend: top-down for 2D exploration games; platformer for precise jumping games
+2. **Movement feel**: "What movement feel are you aiming for?"
+   - Options: physics-heavy (slower acceleration, momentum), arcade (instant response, higher speed), realistic (limited acceleration, inertia)
+   - Recommend: arcade for most games; physics-heavy for platformers requiring precise control
+3. **Dash/wall-jump inclusion**: "Should the controller include dash or wall-jump mechanics?"
+   - Options: dash only, wall-jump only, both, neither
+   - Recommend: neither for minimal complexity; add only if core to gameplay
+4. **Integration with state-machine**: "Do you want to integrate this controller with a state machine for animation control?"
+   - Options: yes (use `state-machine` skill), no (direct animation calls)
+   - Recommend: yes if character has >3 movement states or combat abilities
 
 ---
 
@@ -432,7 +476,51 @@ func _physics_process(delta: float) -> void:
 
 ---
 
-## 7. Implementation Checklist
+## N. Common Agent Mistakes
+
+| # | Mistake | Why it's wrong | Correct approach |
+|---|---------|---------------|------------------|
+| 1 | Setting `position`/`global_position` directly on CharacterBody | Bypasses collision resolution; body teleports through walls | Use `move_and_slide()` with `velocity`; only set position directly for intentional teleports |
+| 2 | Putting movement code in `_process()` instead of `_physics_process()` | Movement becomes frame-rate-dependent; collision detection is unreliable | All physics/velocity code goes in `_physics_process(delta)` |
+| 3 | Hard-coding gravity instead of reading from ProjectSettings | Gravity values differ between 2D and 3D projects; hard-coded values break when project settings change | Always use `ProjectSettings.get_setting("physics/2d/3d/default_gravity")` |
+| 4 | Not normalizing input vector in top-down movement | Moving diagonally is ~40% faster than cardinal directions | `Input.get_vector()` returns a normalized vector automatically |
+| 5 | Calling `Input.is_action_just_pressed()` for jump in `_physics_process()` without coyote time | Jump input is consumed on the exact frame the player leaves the platform; feels unresponsive | Always implement coyote time + jump buffer for platformers |
+| 6 | Exposing `gravity` as an `@export` variable | Changes to `gravity` should be global via ProjectSettings; per-node overrides cause inconsistent behavior | Read from ProjectSettings; only export if you specifically need per-body gravity overrides |
+| 7 | Using `_unhandled_input()` for continuous movement input | `_unhandled_input()` fires once per event, not per frame; continuous movement requires per-frame polling | Use `Input.get_vector()`/`Input.get_axis()` inside `_physics_process()`; use `_unhandled_input()` only for discrete one-shot actions |
+
+## N+1. Addon Override
+
+When the project has relevant addons:
+
+| Addon | Coverage Type | Usage Guidance |
+|-------|--------------|----------------|
+| `orchestrator` | Partial (movement state FSM) | Use Orchestrator for state transitions; use skill patterns for physics/movement code |
+| `phantom-camera` | Complementary | Use PhantomCamera for camera follow; use skill patterns for player physics |
+
+`orchestrator` and `phantom-camera` do not conflict and can be used together.
+
+## N+2. Self-Verification
+
+After generating code, run this verification loop. Fix any failures before reporting completion.
+
+### Automated checks (agent runs without user)
+
+- [ ] **Process placement scan**: Grep for `velocity` modification or `move_and_slide()` inside `_process()` — flag if found
+- [ ] **Gravity source scan**: Grep for hard-coded gravity (numeric float literal called `gravity`) — flag if not reading from ProjectSettings
+- [ ] **Position mutation scan**: Grep for `position = ` or `global_position = ` outside of teleport-specific methods — flag if found
+
+### Manual checks (agent reviews code, reports to user)
+
+- [ ] **Input map audit**: Verify all action names used in code match the project's Input Map definitions
+- [ ] **Coyote time logic audit**: Verify coyote timer decrements when NOT on floor; verify jump consumes both coyote and buffer simultaneously
+
+### Behavioral checks (user must test in Godot)
+
+- [ ] **GUT test**: Generate a test that verifies movement speed, jump height, and collision behavior
+  - Run: `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/skill_verification -gprefix=player -gexit`
+- [ ] **Play test**: Run the game; move in all 4 directions, jump, dash (if implemented), wall-jump (if implemented); verify feel is responsive and no clipping occurs
+
+## N+3. Implementation Checklist
 
 - [ ] All movement logic is inside `_physics_process(delta)`, not `_process`
 - [ ] Input action names match exactly what is defined in **Project > Project Settings > Input Map**
@@ -441,3 +529,6 @@ func _physics_process(delta: float) -> void:
 - [ ] Platformers implement coyote time and jump buffering for responsive feel
 - [ ] FPS controllers capture mouse in `_ready()` and release on escape
 - [ ] Variable jump height is handled via early-release velocity reduction
+- [ ] **New**: Interface Contract with state-machine confirmed if both are loaded
+- [ ] **New**: Self-Verification loop completed (see section above)
+- [ ] **New**: Addon presence checked and user consulted (Step 0.5)

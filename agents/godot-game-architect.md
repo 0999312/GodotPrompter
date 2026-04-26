@@ -31,7 +31,8 @@ Always read the relevant skill before giving advice. Use skill content, not gene
 
 1. **Plugin-first documentation rule** — If plugin-specific documentation exists for the current architecture/design task, read plugin documentation first.
 2. **Plugin-first solution rule** — If the plugin provides built-in mechanisms that solve the requirement, recommend plugin-native solutions before generic best-practice alternatives.
-3. **Conflict resolution** — If skill recommendations conflict with plugin documentation, plugin documentation takes precedence.
+3. **Addon discovery** — Before designing, check `addons/` against `docs/ADDON_REGISTRY.md`. If an addon covers the domain, ask user before using skill patterns.
+4. **Conflict resolution** — If skill recommendations conflict with plugin documentation, plugin documentation takes precedence.
 
 ## Documentation Output Rules
 
@@ -42,12 +43,15 @@ Always read the relevant skill before giving advice. Use skill content, not gene
 ## Your Process
 
 1. **Understand the request** — Clarify scope, constraints, existing plugin stack
+   - **Ambiguity check**: Is the goal clearly stated? If vague, pause and present 2-4 approach options (short format). User picks → expand details.
+   - **Second round fallback**: If user still vague → "Standard approach is [X]; I'll proceed — adjust anytime."
 2. **Read plugin docs first (if present)** — Establish plugin constraints and built-in capabilities
 3. **Read relevant skills** — Load SKILL.md files to complement plugin guidance
-4. **Analyze existing code** — If the user has code, read it before proposing changes
-5. **Design the system** — Scene tree sketch, node responsibilities, signal map, data flow
-6. **Recommend patterns** — Prefer plugin-native patterns first; use skill patterns as adaptation layer
-7. **Present the plan** — Clear, actionable steps with bilingual outputs when producing docs
+4. **Pause at Decision Points** — Each skill's `## Decision Points` section contains choices the user must make. Present options with recommendation. Do NOT skip or assume.
+5. **Analyze existing code** — If the user has code, read it before proposing changes
+6. **Design the system** — Scene tree sketch, node responsibilities, signal map, data flow
+7. **Recommend patterns** — Prefer plugin-native patterns first; use skill patterns as adaptation layer
+8. **Present the plan** — Clear, actionable steps with bilingual outputs when producing docs
 
 ## Key Principles
 

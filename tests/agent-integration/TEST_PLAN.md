@@ -150,27 +150,123 @@ func take_damage(amount):
 
 ---
 
-## Category 3: Full Workflow (End-to-End Build)
+## Category 3: New Workflow Steps (Step 0, Step 0.5, Step 7)
 
-### Test 3.1: Project + Player
+### Test 3.0: Requirement Validation (ambiguous request)
 
-**Setup:** Empty directory, no existing Godot project.
-
-**Prompt:** "Create a new Godot 4.3 project with a player that can move with WASD and attack with Space."
-
-**Expected skills:** `godot-project-setup`, `player-controller`, `state-machine`
+**Prompt:** "I want to add combat to my game."
 
 **Expected behavior:**
-- Scaffolds project with directory structure from godot-project-setup
-- Creates player with CharacterBody2D top-down movement from player-controller
-- Adds FSM (idle/move/attack) from state-machine
-- Sets up input actions
+- Agent pauses at Step 0 (Requirement Validation) instead of immediately implementing
+- Presents 2-4 short approach options (turn-based, real-time, etc.) with trade-offs
+- After user picks, expands that approach with details before proceeding
 
-**Pass criteria:** All 3 skills used, project structure matches skill patterns.
+**Pass criteria:** Agent does NOT start coding before user confirms approach.
 
 ---
 
-### Test 3.2: Add Enemy
+### Test 3.0b: Requirement Validation (clear request)
+
+**Prompt:** "I need a 2D platformer player that can jump and wall-slide. Speed 200, jump velocity -400."
+
+**Expected behavior:**
+- Agent validates the request is clear
+- Proceeds directly to Step 0.5 without presenting alternatives
+
+**Pass criteria:** No approach options displayed; moves to addon check.
+
+---
+
+### Test 3.0c: Requirement Validation (vague after 2 rounds — fallback)
+
+**Prompt:** "Add something fun to my player."
+
+**Expected behavior (after 2 clarification rounds):**
+- Agent says: "Based on your description, the standard approach is a dash mechanic. Reason: adds immediate feel-good feedback with minimal complexity. I'll proceed, and you can adjust at any time."
+- Then loads the relevant skill and implements
+
+**Pass criteria:** Agent applies fallback after 2 rounds; explicitly states the default approach and reason.
+
+---
+
+### Test 3.0.5: Addon Discovery (overlapping addon found)
+
+**Setup:** Install a mock addon folder `addons/dialogic/` in the test project.
+
+**Prompt:** "Add dialogue to my game with branching choices."
+
+**Expected behavior:**
+- Agent scans `addons/`, finds `dialogic`
+- Matches against `docs/ADDON_REGISTRY.md`
+- Pauses: "I see Dialogic installed, which covers dialogue systems. Should I use Dialogic's API or manual dialogue code?"
+
+**Pass criteria:** Agent pauses for user decision; does NOT auto-select either path.
+
+---
+
+### Test 3.0.5b: Addon Discovery (no relevant addon)
+
+**Setup:** Empty `addons/` directory.
+
+**Prompt:** "Add a health bar HUD to my game."
+
+**Expected behavior:**
+- Agent scans `addons/`, finds nothing relevant
+- Proceeds to load `hud-system` skill without pausing
+
+**Pass criteria:** No pause; proceeds directly to skill-based implementation.
+
+---
+
+### Test 3.0.5c: Addon Discovery (addon conflict)
+
+**Setup:** Install both `addons/dialogic/` and `addons/dialogue_manager/`.
+
+**Prompt:** "Add dialogue to my game."
+
+**Expected behavior:**
+- Agent finds both addons match `dialogue-system` domain
+- Pauses: "I see both Dialogic and Dialogue Manager installed. Dialogic is feature-rich with visual editor; Dialogue Manager is simpler. Which do you prefer?"
+- Does NOT auto-select
+
+**Pass criteria:** Both addons listed; user must choose; no auto-selection.
+
+---
+
+### Test 3.7: Self-Verification (code with bugs)
+
+**Setup:** Have the agent generate a state machine, then inject a deliberate bug (e.g., missing `enter()` call in initial state).
+
+**Prompt:** "Review the generated state machine and fix any issues."
+
+**Expected behavior (when re-running via Step 7):**
+- Agent reads the skill's Success Criteria
+- Generates GUT test for "Correct state transitions" criterion
+- Runs: `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/skill_verification -gexit`
+- Test fails → Agent reads failure → fixes code → re-runs test
+- Reports completion when test passes
+
+**Pass criteria:** Agent detects the bug via GUT test, fixes it, and re-runs.
+
+---
+
+### Test 3.7b: Self-Verification loop limit
+
+**Setup:** Create a purposely unfixable error.
+
+**Prompt:** "Generate a state machine with the transition_to inside enter() bug, then run Self-Verification."
+
+**Expected behavior:**
+- Agent attempts to fix the infinite recursion bug
+- After 5 loops, reports: "Self-verification did not pass after 5 attempts. Remaining failures: [list]. Requesting human guidance."
+
+**Pass criteria:** Agent stops after 5 loops; escalates to human; does NOT continue indefinitely.
+
+---
+
+## Category 4: Full Workflow (End-to-End Build)
+
+### Test 4.2: Add Enemy
 
 **Prompt:** "Add an enemy with patrol AI that chases the player and attacks."
 
@@ -186,7 +282,7 @@ func take_damage(amount):
 
 ---
 
-### Test 3.3: Add HUD
+### Test 4.3: Add HUD
 
 **Prompt:** "Add a health bar HUD that shows the player's health."
 
@@ -201,7 +297,7 @@ func take_damage(amount):
 
 ---
 
-### Test 3.4: Code Review
+### Test 4.4: Code Review
 
 **Prompt:** "Review all the code we just wrote for Godot best practices."
 
@@ -216,7 +312,7 @@ func take_damage(amount):
 
 ---
 
-### Test 3.5: Save/Load
+### Test 4.5: Save/Load
 
 **Prompt:** "Set up save/load for player position and health. F5 to save, F9 to load."
 
@@ -238,4 +334,15 @@ func take_damage(amount):
 2. Install GodotPrompter: `claude plugins add ./GodotPrompter`
 3. Navigate to an empty test directory
 4. Run each test sequentially, recording results in RESULTS.md
-5. For Category 3, keep the same session (tests build on each other)
+5. For Category 4, keep the same session (tests build on each other)
+6. For Category 3 (new workflow tests), use separate sessions as needed for different setup conditions
+
+## Results Summary (Current Verification)
+
+| Category | Total | PASS | PARTIAL | FAIL |
+|----------|-------|------|---------|------|
+| 1. Cold Start | 3 | | | |
+| 2. Skill Discovery | 5 | | | |
+| 3. Workflow Steps | 6 | | | |
+| 4. Full Workflow | 5 | | | |
+| **Total** | **19** | | | |

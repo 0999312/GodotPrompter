@@ -1,6 +1,10 @@
 ---
 name: state-machine
 description: Use when implementing state machines in Godot — enum-based, node-based, and resource-based FSM patterns with trade-offs
+godot_version: "4.3+"
+status: stable
+last_validated: "2026-04-27"
+agent_tested_on: ["claude-4-5-opus", "deepseek-v4-flash"]
 ---
 
 # State Machines in Godot 4.3+
@@ -8,6 +12,43 @@ description: Use when implementing state machines in Godot — enum-based, node-
 Choose the right FSM pattern for your complexity level. All examples target Godot 4.3+ with no deprecated APIs.
 
 > **Related skills:** **player-controller** for movement state integration, **ai-navigation** for AI state patterns, **resource-pattern** for resource-based state configuration.
+>
+> **Addon Override:** `orchestrator` provides full visual FSM replacement — see `docs/ADDON_REGISTRY.md`.
+>
+> **Interface Contract:** When co-loaded with `player-controller`, delegate movement velocity updates to state nodes via `StateMachine.physics_update()` — do NOT set velocity directly in `_physics_process()`. When co-loaded with `event-bus`, emit state-change signals rather than calling transition_to by name from outside the state machine.
+
+---
+
+## Success Criteria
+
+When implementing a state machine, the result MUST satisfy:
+
+1. **Correct state transitions**: All defined transitions work without visual glitches; the target state's `enter()` method is called exactly once on transition
+   - **GUT test**: Mock a state machine, trigger each defined transition, assert the correct state is active after each
+2. **No transition loops**: No state can trigger a transition that leads back to itself in the same frame, causing infinite recursion
+   - **GUT test**: Add a counter in `enter()`; verify no state's enter is called more than once per frame
+3. **Enter/exit pairing**: Every `enter()` call has a corresponding `exit()` call before the next `enter()` on the same state
+   - **GUT test**: Maintain a global counter incremented on enter and decremented on exit; assert counter is always 0 between transitions
+4. **Animation sync**: All animation changes happen inside `enter()` — never inside `update()`/`physics_update()`/`handle_input()`
+   - **GUT test** (manual): Code inspection — grep for `.play(` in `update()` and `physics_update()` methods
+5. **Invalid state handling**: Transitioning to an undefined state logs an error and does not crash or leave the machine in an undefined state
+   - **GUT test**: Call `transition_to("non_existent_state")`; assert current state remains unchanged
+
+---
+
+## Decision Points
+
+**🛑 Pause and ask the user before proceeding:**
+
+1. **FSM approach selection**: "Your use case has [N] expected states. I recommend [approach] because [reason]. Does that work, or do you prefer a different approach?"
+   - Options: enum-based (simple, <5 states), node-based (recommended for characters, enter/exit hooks), resource-based (data-driven, editor-configurable)
+   - Recommend: node-based for most character implementations
+2. **State ownership**: "Should each state node manage its own sub-scene, or should all states be children of a single StateMachine node?"
+   - Options: flat children (simpler, single scene), nested sub-scenes (modular, reusable states)
+   - Recommend: flat children for single-player characters; nested for reusable AI state packs
+3. **Parallel vs hierarchical vs flat**: "Your character has [movement + combat + animation] concerns. Should I use parallel machines, a hierarchical machine, or a single flat FSM?"
+   - Options: parallel (independent concerns), hierarchical (nested states), flat (simple, <8 states)
+   - Recommend: parallel for player characters (movement + combat), hierarchical for complex AI enemies
 
 ---
 
@@ -639,7 +680,53 @@ Fewer than 5 states?
 
 ---
 
-## 7. Implementation Checklist
+## N. Common Agent Mistakes
+
+| # | Mistake | Why it's wrong | Correct approach |
+|---|---------|---------------|------------------|
+| 1 | Calling `transition_to()` inside `enter()` of the new state | Creates infinite recursion — `enter()` triggers transition, which triggers exit+enter on the same state, which triggers `enter()` again | Return a state name string from `update()`/`physics_update()`; never call `transition_to()` from within `enter()` |
+| 2 | Using `match`/`switch` with states but forgetting `return` after transition | Falls through to the next state's logic in the same frame; both states run their logic | Always `return` after `current_state = NewState` unless the match is the last branch |
+| 3 | Not calling `enter()` on the initial state in `_ready()` | The starter state's `enter()` never runs; animations, timers, or initial positioning are skipped | Call `current_state.enter()` in `StateMachine._ready()` after setting `initial_state` |
+| 4 | Using `StringName` for state names inconsistently | `transition_to("idle")` and `transition_to(&"idle")` work differently in Dictionary lookups | Pick one convention (prefer `&"name"` for performance) and stick to it everywhere |
+| 5 | Sharing the same State node instance across multiple entities | State nodes store per-entity references like `entity` or `animation_player`; sharing them leaks references between instances | Each entity needs its own StateMachine and State node instances — never `preload()` a State scene for reuse without instantiation |
+| 6 | Placing animation code in `_physics_process()` instead of `enter()` | Animation re-triggers every frame, causing flickering and performance loss | All `.play()` calls go in `enter()`; only movement logic goes in `physics_update()` |
+| 7 | Defining state transitions in both the parent (via `_process`) and children (via return from `update`) | Transitions can fire twice or conflict; debugging becomes harder | Pick ONE pattern: either parent checks all transitions (simple FSMs) or each child returns transition names (node-based pattern) |
+
+## N+1. Addon Override
+
+When the project has `orchestrator` installed:
+
+| Addon | Coverage Type | Usage Guidance |
+|-------|--------------|----------------|
+| `orchestrator` | Full replacement | Use Orchestrator's visual state machine instead of the patterns below |
+| `pandora` | Partial (quest states) | Use Pandora for quest/objective tracking; use skill patterns for character FSM |
+
+**Conflict warning**: `orchestrator` and `state-machine` skill patterns should not be mixed in the same entity. Pick one per character.
+
+**When orchestrator is present but user declines to use it**: Fall back to the node-based pattern (Section 3). The enum-based pattern is too rigid for characters that would plausibly use Orchestrator.
+
+## N+2. Self-Verification
+
+After generating code, run this verification loop. Fix any failures before reporting completion.
+
+### Automated checks (agent runs without user)
+
+- [ ] **Infinite recursion scan**: Grep for `transition_to(` inside `enter()` — flag if found
+- [ ] **Enter/exit parity scan**: For each State subclass, check that `enter()` and `exit()` are both defined (or both inherited)
+- [ ] **Animation placement scan**: Grep for `.play(` inside `update()` — flag any matches
+
+### Manual checks (agent reviews code, reports to user)
+
+- [ ] **Circular transition audit**: Trace all transition paths manually; verify no path loops back to the starting state without an exit condition
+- [ ] **Unused state detection**: Check if every defined state is reachable via at least one transition path from the initial state
+
+### Behavioral checks (user must test in Godot)
+
+- [ ] **GUT test**: Generate a test that transitions through all defined states and asserts correct enter/exit sequence
+  - Run: `godot --headless -s addons/gut/gut_cmdln.gd -gdir=res://tests/skill_verification -gprefix=state_machine -gexit`
+- [ ] **Play test**: Run the game; trigger each state transition via input or gameplay; verify animation changes and no stuck states
+
+## N+3. Implementation Checklist
 
 - [ ] Chose the approach that matches actual complexity (enum / node / resource)
 - [ ] Every state has explicit `enter()` and `exit()` methods (or equivalent)
@@ -648,3 +735,5 @@ Fewer than 5 states?
 - [ ] No circular transition loops that could cause infinite recursion in a single frame
 - [ ] Flat FSM is replaced with hierarchical or parallel when states exceed ~8 or span multiple concerns
 - [ ] Parallel state machines don't modify the same state (e.g., both setting velocity) — one concern per machine
+- [ ] **New**: Self-Verification loop completed (see section above)
+- [ ] **New**: Addon presence checked and user consulted (Step 0.5)

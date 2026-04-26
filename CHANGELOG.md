@@ -4,6 +4,32 @@ All notable changes to GodotPrompter will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.5.0] - 2026-04-27
+
+### Added
+
+- **AGENTS.md** — New Step 0 (Requirement Validation), Step 0.5 (Addon Discovery & Override), Step 7 (Full-Depth Self-Verification Protocol)
+- **docs/SKILL_TEMPLATE_v2.md** — Standardized skill template with Success Criteria, Decision Points, Common Agent Mistakes, Addon Override, and Self-Verification sections
+- **docs/ADDON_REGISTRY.md** — Centralized addon → skill domain coverage mapping (14 verified entries)
+- **docs/SELF_VERIFICATION_GUIDE.md** — Full-depth verification protocol: GUT tests, Godot headless loop, escalation rules
+- **docs/IMPROVEMENT_PLAN_v1.5.md** — Complete improvement plan documentation
+- **All 3 agents** — Pre-Implementation Protocol (requirement validation + addon scan before skill loading)
+- **Pilot skills (6)** — `state-machine`, `player-controller`, `event-bus`, `resource-pattern`, `scene-organization`, `godot-code-review` upgraded to v2 template with all 5 new sections
+- **Prohibited patterns (4 new)** — Skipping Step 0/0.5/7, implementing via skill when addon covers domain, running Self-Verification >5 loops
+- **tests/agent-integration** — 8 new test cases for workflow steps (19 total)
+
+### Changed
+
+- **CONTRIBUTING.md** — Updated to require v2 template for new skills; added migration checklist for existing skills
+- **CLAUDE.md** — Updated SKILL.md Format section for v2 template; added Addon Registry documentation section
+- **skills/using-godot-prompter/SKILL.md** — Added Addon Registry, Self-Verification Protocol, and Skill Template v2 sections; updated workflow to include Step 0 and Step 0.5
+- **docs/ADDON_REGISTRY.md** — Fixed Phantom Camera (ramokz) and Orchestrator (CraterCrash) links; removed invalid entries (Water Ways, Discord Game SDK, Terrain Automata, Player Manager); replaced Vala with gdtoolkit; added mc_game_framework
+
+### Fixed
+
+- **docs/ADDON_REGISTRY.md** — Removed 4 entries that were not Godot 4.x addons (Water Ways: Godot 3.x only; Discord Game SDK: Godot 3.x, archived; Terrain Automata: not found; Player Manager: not found)
+- **docs/ADDON_REGISTRY.md** — Converted 4 non-addon entries to built-in feature notes (UPNP, AssetLib, Rider, Vala → gdtoolkit)
+
 ## [1.4.1-fork] - 2026-04-25
 
 ### Fork changes
