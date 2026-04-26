@@ -13,7 +13,7 @@ All examples target Godot 4.3+ with no deprecated APIs. GDScript is shown first,
 
 ## 1. Physics Body Types
 
-> **Godot 4.4+ recommendation:** Jolt Physics is now the default physics engine for new 3D projects and is built into the engine. For new 3D projects, use Jolt unless you have a specific reason to use GodotPhysics. See Section 8 for Jolt details and differences. 2D physics always uses GodotPhysics.
+> **Godot 4.6+ recommendation:** Jolt Physics is now the **default physics engine for all new 3D projects** (since Godot 4.6). Existing projects retain their current physics setting. For any new 3D project, Jolt is the recommended choice — it provides better stability, cylinder support, and thread safety. See Section 8 for Jolt details and differences. 2D physics always uses GodotPhysics.
 
 Godot provides four collision object types. The last three extend `PhysicsBody2D`/`PhysicsBody3D`:
 
@@ -638,12 +638,10 @@ public override void _PhysicsProcess(double delta)
 
 ## 8. Jolt Physics
 
-Jolt is a built-in alternative physics engine available since Godot 4.4. It is the **default for new 3D projects** starting in 4.4.
+Jolt is a built-in physics engine available since Godot 4.4. Since **Godot 4.6**, Jolt is the **default physics engine for all new 3D projects** — no manual enabling required.
 
-### Enabling Jolt
-
-**Project Settings → Physics → 3D → Physics Engine** → set to `Jolt Physics` → Save → Restart editor.
-
+> Existing 4.4/4.5 projects that use GodotPhysics are unaffected. You can still manually switch in **Project Settings → Physics → 3D → Physics Engine** → `Jolt Physics` → Save → Restart editor.
+>
 > Jolt is 3D only. 2D always uses GodotPhysics.
 
 ### Why Use Jolt
@@ -915,3 +913,4 @@ For planetary-scale games, recompile with `precision=double` or implement origin
 - [ ] Physics interpolation is enabled and `reset_physics_interpolation()` is called on teleport
 - [ ] Concave collision shapes are only used on StaticBodies
 - [ ] Ragdoll bones are on separate collision layers from the character's main collider
+- [ ] New 3D projects use Jolt Physics (default in 4.6+) — verify in Project Settings for upgraded projects

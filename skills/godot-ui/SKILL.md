@@ -140,6 +140,17 @@ panel.OffsetBottom = 0f;
 
 For fully responsive layout, keep offsets at 0 and let anchors do the work. Add small fixed offsets only for cosmetic margins (e.g., a 16 px gutter from an edge).
 
+### pivot_offset_ratio (Godot 4.6+)
+
+Godot 4.6 introduces `pivot_offset_ratio`, which lets you express the pivot point as a normalized (0.0–1.0) value relative to the control's size:
+
+```gdscript
+# Keep the pivot centered regardless of size changes
+control.pivot_offset_ratio = Vector2(0.5, 0.5)
+```
+
+Previously, only `pivot_offset` (in pixels) was available, requiring recalculation on every resize. With `pivot_offset_ratio`, the pivot automatically stays in position as the node resizes — useful for rotating or scaling UI elements that respond to layout changes.
+
 ---
 
 ## 4. Theme System
@@ -259,6 +270,23 @@ Set `focus_mode` on any `Control` node:
 | `2` | `Control.FOCUS_ALL` | Receives focus from mouse click, Tab, and gamepad/keyboard |
 
 Interactive widgets (`Button`, `LineEdit`, `Slider`) default to `FOCUS_ALL`. Set `FOCUS_NONE` on `Label` and `TextureRect` nodes so they are skipped during keyboard navigation.
+
+### Mouse vs Keyboard Focus Separation (Godot 4.6+)
+
+Since Godot 4.6, clicking a UI element with a mouse no longer forces the blue focus outline to appear. You can now style the focus indicator for keyboard/gamepad navigation independently from mouse interaction:
+
+| Scheme | Trigger | Focus outline visible | Typical styling |
+|--------|---------|----------------------|-----------------|
+| Mouse | Click/tap | No | No focus styling needed |
+| Keyboard/Gamepad | Tab/arrow navigation | Yes | Use `focus_entered` / `:focus` theme |
+
+This eliminates the need for workarounds to hide focus outlines on click. Style the focus state normally (via theme or `theme_override`) — it will only show when focus is changed via keyboard or gamepad by default.
+
+```gdscript
+# No extra code needed — the engine handles this automatically.
+# Style your :focus state in the theme as usual.
+# Mouse clicks will NOT trigger the focus visual.
+```
 
 ### focus_neighbor Properties
 
@@ -645,6 +673,7 @@ private void OnSearchFieldTextChanged(string newText) { }
 - [ ] One `Theme` resource assigned at the screen root — not duplicated on every child
 - [ ] `StyleBoxFlat` used instead of image assets for simple solid-colour panels
 - [ ] `add_theme_*_override()` used for per-node overrides rather than assigning a whole new `Theme`
+- [ ] `pivot_offset_ratio` used instead of `pivot_offset` for responsive centering (Godot 4.6+)
 - [ ] Containers (`VBoxContainer`, `HBoxContainer`, etc.) used for layout instead of manual `position` values
 - [ ] `custom_minimum_size` set on widgets that must not collapse to zero
 - [ ] Slider and volume code uses `linear_to_db` / `db_to_linear` — not raw linear values mapped to audio bus

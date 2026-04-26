@@ -295,6 +295,60 @@ res://
     └── default_theme.tres  # Font assignments per locale if needed
 ```
 
+### CSV Enhancements (Godot 4.6+)
+
+Godot 4.6 adds two optional columns for richer translation data and template generation.
+
+#### ?context Column
+
+Provide translators with context for ambiguous keys:
+
+```csv
+keys,en,cs,?context
+MENU_START,Start Game,Začít hru,Main menu start button
+MENU_OPEN,Open,Otevřít,File dialog open button
+DOOR_OPEN,Open,Otevřeno,Interacting with a door
+```
+
+The `?context` column is ignored at runtime — it only appears in generated templates for translator reference.
+
+#### ?plural Column
+
+Define plural forms directly in CSV:
+
+```csv
+keys,en,cs,?plural
+ENEMY_KILLED,Enemy killed,Nepřítel zabit,one
+ENEMY_KILLED,%d enemies killed,%d nepřátelé zabiti,few
+ENEMY_KILLED,%d enemies killed,%d nepřátel zabito,other
+```
+
+Rows with the same key but different `?plural` values define the plural forms. Use PO format instead for languages with complex plural rules (6+ forms).
+
+#### Template Generation
+
+Godot 4.6 can generate CSV translation templates from your project's `tr()` calls:
+
+1. **Project → Tools → Localization → Generate CSV Translation Template**
+2. Choose output path
+3. The generated CSV includes all keys from your scripts with `?context` column
+
+This gives you a starting point for translators without manually building CSV headers.
+
+### C# Translation Parsing (Godot 4.6+)
+
+Godot 4.6 now parses C# translation calls the same way it handles GDScript. Strings wrapped in `Tr()` and `TrN()` in C# are automatically picked up during POT/CSV export.
+
+```csharp
+// These strings are now automatically extracted for translation
+string title = Tr("MENU_START");
+string killedMsg = TrN("ONE_ENEMY", "MANY_ENEMIES", count);
+
+// No manual extraction or annotation needed
+```
+
+Previously, C# strings had to be manually maintained in translation files. With Godot 4.6, the localization workflow for mixed GDScript/C# projects is fully unified.
+
 ### Translation Keys Convention
 
 ```
@@ -333,5 +387,7 @@ ITEM_SWORD_DESC          # Inventory item description
 - [ ] RTL languages have `layout_direction` set to `RTL` or `LOCALE` on root UI containers
 - [ ] Format strings (`%s`, `%d`) are applied AFTER `tr()`, not before
 - [ ] Translation keys follow a consistent naming convention
+- [ ] CSV files use `?context` columns for translator guidance (Godot 4.6+)
+- [ ] C# `Tr()` / `TrN()` calls are used — auto-extracted in Godot 4.6+
 - [ ] UI layout adapts to longer/shorter text in different languages (no hardcoded widths)
 - [ ] PO format is used for languages with complex plural rules

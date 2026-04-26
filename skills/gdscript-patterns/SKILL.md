@@ -569,7 +569,38 @@ public partial class SpecialEnemy : EnemyBase
 
 ---
 
-## 8. Common Idioms
+## 8. Static Variables (`static var`)
+
+Since Godot 4.1, GDScript supports `static var` for sharing variables across all instances of a class without needing an autoloaded singleton.
+
+```gdscript
+# counter.gd
+class_name Counter
+extends RefCounted
+
+static var instance_count: int = 0
+
+func _init() -> void:
+    instance_count += 1
+
+func _notification(what: int) -> void:
+    if what == NOTIFICATION_PREDELETE:
+        instance_count -= 1
+```
+
+**Use cases:**
+- Tracking instance counts of a class
+- Shared caches or lookup tables across instances
+- Simple global state that belongs to a specific class (not the whole project)
+
+**Limitations:**
+- `static var` cannot be exported (`@export` is not supported)
+- Static variables are not saved/loaded automatically
+- Use `@static_unload` annotation to allow static vars to be freed when the script is unloaded
+
+---
+
+## 9. Common Idioms
 
 ### Ternary Expression
 
@@ -667,7 +698,23 @@ var health: int = 100:
 
 ---
 
-## 9. Annotations Reference
+## 9. Underscored Signals (Godot 4.6+)
+
+Since Godot 4.6, signals starting with an underscore (`_`) are hidden from autocompletion and generated documentation, matching the behavior of underscored methods and properties:
+
+```gdscript
+# Public signal — visible in autocompletion and docs
+signal health_changed(old_value: int, new_value: int)
+
+# Internal signal — hidden from autocompletion and docs
+signal _internal_reset
+```
+
+Use this to reduce noise in the signal list — hide signals that are only used internally within the same script or class.
+
+---
+
+## 10. Annotations Reference
 
 | Annotation            | Purpose                                    |
 |-----------------------|--------------------------------------------|
@@ -688,7 +735,7 @@ var health: int = 100:
 
 ---
 
-## 10. Common Pitfalls
+## 11. Common Pitfalls
 
 | Symptom                               | Cause                                       | Fix                                                              |
 |---------------------------------------|----------------------------------------------|------------------------------------------------------------------|
@@ -705,7 +752,7 @@ var health: int = 100:
 
 ---
 
-## 11. Implementation Checklist
+## 12. Implementation Checklist
 
 - [ ] All variables, parameters, and return types have explicit type hints
 - [ ] Typed arrays (`Array[Type]`) are used instead of untyped `Array` where possible
@@ -718,3 +765,5 @@ var health: int = 100:
 - [ ] `is` type check precedes `as` cast when the type isn't guaranteed
 - [ ] Properties with setters validate and clamp values
 - [ ] Overridden virtual methods call `super()` when extending non-built-in base classes
+- [ ] `static var` is used instead of autoloads for class-level shared state
+- [ ] Internal-only signals start with `_` to hide them from autocompletion (Godot 4.6+)

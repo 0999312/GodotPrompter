@@ -1,6 +1,6 @@
 ---
 name: 3d-essentials
-description: Use when working with 3D-specific systems — materials, lighting, shadows, environment, global illumination, fog, LOD, occlusion culling, and decals in Godot 4.3+
+description: Use when working with 3D-specific systems — materials, lighting, shadows, environment, global illumination, fog, LOD, occlusion culling, decals, SSR, and probes in Godot 4.3+
 ---
 
 # 3D Essentials in Godot 4.3+
@@ -339,16 +339,52 @@ public void SetupEnvironment()
 | ACES       | High contrast with desaturation            | Realistic/photographic         |
 | AgX        | Maintains hue as brightness increases      | Physically accurate lighting   |
 
+### Configurable AgX Parameters (Godot 4.6+)
+
+Godot 4.6 exposes two AgX tonemapper parameters for fine-tuning:
+
+```gdscript
+var env: Environment = $WorldEnvironment.environment
+env.tonemap_mode = Environment.TONE_MAP_AGX
+
+# White point — controls how bright highlights compress (default: 6.0)
+env.agx_white = 6.0  # Lower = brighter compression, Higher = retains more detail
+
+# Contrast — controls mid-tone contrast (default: 1.0)
+env.agx_contrast = 1.0  # > 1.0 = more contrast, < 1.0 = less
+```
+
+```csharp
+var env = GetNode<WorldEnvironment>("WorldEnvironment").Environment;
+env.TonemapMode = Godot.Environment.ToneMapper.AgX;
+env.AgxWhite = 6.0;
+env.AgxContrast = 1.0;
+```
+
+These parameters are compatible with 4.4/4.5 projects — the default values produce identical results.
+
+### Material Debanding on Mobile Renderer (Godot 4.6+)
+
+The Mobile renderer now supports **material debanding** for 3D — previously only available on Forward+. Enable in Project Settings:
+
+```gdscript
+# Project Settings → Rendering → Anti-Aliasing → Use Debanding
+# Set to true
+```
+
+When HDR 2D is enabled, the Mobile renderer also maintains higher color precision through the entire 3D pipeline, preventing quality loss. This makes the Mobile renderer a viable option for 3D games on desktop as well as mobile.
+
 ### Post-Processing Effects (Inspector)
 
 Configure these on the Environment resource — no shader code needed:
 
 | Effect    | Description                              | Renderer Support         |
 |-----------|------------------------------------------|--------------------------|
-| Glow      | Bloom/glow on bright surfaces            | All                      |
+| Glow      | Bloom/glow on bright surfaces (blended before tonemapping since 4.6) | All                      |
 | SSAO      | Screen-space ambient occlusion           | Forward+ only            |
 | SSIL      | Screen-space indirect lighting           | Forward+ only            |
-| SSR       | Screen-space reflections                 | Forward+ only            |
+| SSR       | Screen-space reflections (major quality+perf overhaul in 4.6) | Forward+ only            |
+| SSR (half-res) | SSR at 50% viewport — ~2x faster with 4.6's improved quality | Forward+ only            |
 | SDFGI     | Real-time GI for large scenes            | Forward+ only            |
 | DOF       | Depth of field blur (via CameraAttributes) | All                   |
 | Fog       | Depth and height fog                     | All                      |
@@ -371,7 +407,7 @@ Configure these on the Environment resource — no shader code needed:
 
 ### ReflectionProbe
 
-Captures the surrounding environment into a cubemap for reflections on nearby objects.
+Captures the surrounding environment for reflections on nearby objects. Since Godot 4.6, reflection and radiance probes use **octahedral maps** instead of cubemaps — cheaper to compute, lower memory usage, and more reliable across hardware.
 
 ```
 Room (Node3D)
@@ -396,6 +432,8 @@ public override void _Ready()
     probe.UpdateMode = ReflectionProbe.UpdateModeEnum.Once;
 }
 ```
+
+> **Note:** Octahedral maps (4.6+) replace the cubemap dependency, making probes work more reliably across a wider range of hardware. No changes to your probe setup are needed — the improvement is automatic.
 
 ### LightmapGI (Baked)
 
@@ -772,4 +810,7 @@ Choose in **Project Settings > Rendering > Renderer > Rendering Method**.
 - [ ] Mesh LOD is enabled on import (default for glTF/Blend — verify OBJ files)
 - [ ] Occlusion culling is enabled and baked for scenes with heavy occlusion (indoor, urban)
 - [ ] MultiMeshInstance3D is used for instanced geometry (grass, trees, props) instead of individual nodes
-- [ ] Renderer matches target platform (Forward+ desktop, Mobile mobile, Compatibility web)
+- [ ] Renderer matches target platform (Forward+ desktop, Mobile mobile/desktop-3D, Compatibility web)
+- [ ] SSR quality adjusted (full-res vs half-res) based on performance needs (Godot 4.6+)
+- [ ] Glow blends before tonemapping (default in 4.6+ — verify if importing older project settings)
+- [ ] Mobile renderer uses debanding for 3D content (Godot 4.6+)

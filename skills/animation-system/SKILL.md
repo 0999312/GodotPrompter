@@ -597,6 +597,125 @@ Godot 4.3 can retarget animations from one skeleton to another during `.glb`/`.g
 
 ---
 
+## 6.5. Godot 4.6+ — New IK Framework
+
+Godot 4.6 introduces a brand-new IK (Inverse Kinematics) framework built on `SkeletonModifier3D`, replacing the legacy system. It provides constraint-based, modular IK with multiple solver types.
+
+### Core Architecture
+
+```
+Character (CharacterBody3D)
+├── Skeleton3D
+│   ├── SkeletonModifier3D (base class for all IK modifiers)
+│   │   ├── TwoBoneIK3D          # Elbow/knee (2-bone chain)
+│   │   ├── FABRIK3D             # Multi-bone chain (iterative)
+│   │   ├── CCDIK3D              # Multi-bone chain (iterative)
+│   │   ├── SplineIK3D           # Smooth curve deformation
+│   │   └── JacobianIK3D         # Full-body (many effectors)
+```
+
+### IK Solver Comparison
+
+| Solver | Type | Use For | Characteristics |
+|--------|------|---------|-----------------|
+| `TwoBoneIK3D` | Deterministic | Arms, legs (2 bones only) | Fastest, no iteration |
+| `SplineIK3D` | Deterministic | Tails, tentacles, spines | Smooth curvature along chain |
+| `FABRIK3D` | Iterative | Multi-bone chains (3+) | Fast convergence, no angle limits |
+| `CCDIK3D` | Iterative | Multi-bone chains (3+) | Cyclic descent, good for limbs |
+| `JacobianIK3D` | Iterative | Full-body IK | Most flexible, heaviest compute |
+
+### Basic Setup — TwoBoneIK3D (Arm)
+
+```gdscript
+@onready var skeleton: Skeleton3D = $Skeleton3D
+
+func _ready() -> void:
+    var ik := TwoBoneIK3D.new()
+    ik.name = "ArmIK"
+    ik.bone_name = "UpperArm"   # root bone of chain
+    ik.end_bone_name = "Hand"   # tip bone of chain
+
+    # Create a target node for the hand to follow
+    var target := Marker3D.new()
+    target.name = "HandTarget"
+    skeleton.add_child(target)
+    ik.target = target.get_path()
+
+    # Set intermediate bone hint (optional — controls elbow direction)
+    var hint := Marker3D.new()
+    hint.name = "ElbowHint"
+    hint.position = Vector3(0, 0, -0.3)  # relative to skeleton
+    skeleton.add_child(hint)
+    ik.use_middle_bone_hint = true
+    var middle_bone_name := skeleton.get_bone_name(skeleton.get_bone_parent(ik.bone_name))
+    ik.middle_bone_hint = hint.get_path()
+
+    skeleton.add_skeleton_modifier(ik)
+```
+
+### FABRIK3D — Multi-Bone Chain
+
+```gdscript
+func setup_tentacle_ik() -> void:
+    var fabrik := FABRIK3D.new()
+    fabrik.name = "TentacleIK"
+    fabrik.bone_name = "TentacleBase"
+    fabrik.end_bone_name = "TentacleTip"
+
+    var target := Marker3D.new()
+    target.name = "TentacleTarget"
+    skeleton.add_child(target)
+    fabrik.target = target.get_path()
+
+    fabrik.min_distance = 0.01    # convergence threshold
+    fabrik.max_iterations = 20     # iteration limit (higher = more precise, slower)
+    skeleton.add_skeleton_modifier(fabrik)
+```
+
+### Constraints
+
+Use constraints to prevent unnatural joint rotation:
+
+```gdscript
+# After creating an IK modifier:
+var twist := IKTWistConstraint3D.new()
+twist.bone_name = "LowerArm"
+twist.twist_angle = deg_to_rad(45.0)
+fabrik.add_constraint(twist)
+
+var angle := IKOneDoFConstraint3D.new()
+angle.bone_name = "Elbow"
+angle.min_angle = deg_to_rad(-10.0)
+angle.max_angle = deg_to_rad(150.0)
+fabrik.add_constraint(angle)
+```
+
+### Combining with Animation
+
+IK modifiers blend with animation via `influence` (0.0–1.0):
+
+```gdscript
+# Fully animated hand wave
+$Skeleton3D/ArmIK.influence = 0.0
+
+# Reach for an object (full IK)
+$Skeleton3D/ArmIK.influence = 1.0
+$HandTarget.global_position = object_position
+
+# Partial blend (IK + animation)
+$Skeleton3D/ArmIK.influence = 0.6
+```
+
+### Debug Hint Display
+
+Enable debug visualization per modifier:
+
+```gdscript
+$Skeleton3D/ArmIK.debug_display_enabled = true
+```
+
+---
+
 ## 7. Common Animation Recipes
 
 ### Hit Flash
@@ -743,3 +862,6 @@ func shake(intensity: float = 5.0, duration: float = 0.2) -> void:
 - [ ] Head/eye tracking uses `LookAtModifier3D` instead of manual bone rotation (Godot 4.4+)
 - [ ] Hair, capes, and tails use `SpringBoneSimulator3D` instead of custom physics scripts (Godot 4.4+)
 - [ ] Shared animation libraries use retargeting with `SkeletonProfileHumanoid` (Godot 4.3+)
+- [ ] IK chains use `SkeletonModifier3D` / solver nodes instead of manual bone rotation (Godot 4.6+)
+- [ ] IK modifiers have appropriate constraints (`IKTwistConstraint3D`, `IKOneDoFConstraint3D`) to prevent unnatural joint rotation
+- [ ] IK `influence` is used to blend between animation and IK (0.0 = animation, 1.0 = full IK)
